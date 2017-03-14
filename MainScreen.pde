@@ -20,7 +20,8 @@ class MainScreen extends BaseGameScreen {
   Coin coin;
   Health collectableHealth;
   JumpBoost jumpBoost;
-  
+  TimeBoost timeBoost;
+  FlameThrower flameThrower;
   
   Minim minim;
   AudioPlayer jamaicanAmbianceAudioPlayer;
@@ -44,6 +45,8 @@ class MainScreen extends BaseGameScreen {
     coin = new Coin(100, groundLevel, 0);
     collectableHealth = new Health(150, groundLevel, 0);
     jumpBoost = new JumpBoost(210, groundLevel, 0);
+    timeBoost = new TimeBoost(260, groundLevel, 0);
+    flameThrower = new FlameThrower(310, groundLevel, 0);
   }
 
   private void loadMusicFiles() {
@@ -102,6 +105,8 @@ class MainScreen extends BaseGameScreen {
     coin.updateForDraw();
     collectableHealth.updateForDraw();
     jumpBoost.updateForDraw();
+    timeBoost.updateForDraw();
+    flameThrower.updateForDraw();
 
     player.updateForDrawAtPosition();
     //TODO increase starting i value whenever obstacle passes or collides with player
