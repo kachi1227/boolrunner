@@ -9,11 +9,24 @@ abstract class BaseBobSled {
   private float jumpVel;
   private float gravity;
 
+  protected int score;
+  protected int health;
+  private int totalCoins;
+  private int totalJumpBoosts;
+  private int totalFlamethrowerAmmo;
+  private int totalTimeBoostInSeconds;
+
   BaseBobSled(float x, float ground, float gravity) {
     xPosition = x;
     groundLevel = ground;
     sledBottom = groundLevel;
     this.gravity = gravity;
+    reset();
+  }
+
+  void reset() {
+    score = 0;
+    health = 100;
   }
 
   public void performJump() {
@@ -24,21 +37,21 @@ abstract class BaseBobSled {
   public boolean isJumping() {
     return performingJump;
   }
-  
-  public float getPositionX() {
-   return xPosition; 
-  }
-  
-  public float getRightX() {
-   return xPosition + getWidth(); 
+
+  public float getLeftX() {
+    return xPosition;
   }
 
-  public float getSledBottom() {
+  public float getRightX() {
+    return xPosition + getWidth();
+  }
+
+  public float getBottomY() {
     return sledBottom;
   }
-  
-  public float getSledTop() {
-   return sledBottom - getHeight(); 
+
+  public float getTopY() {
+    return sledBottom - getHeight();
   }
 
   void updateForDrawAtPosition() {
@@ -52,7 +65,63 @@ abstract class BaseBobSled {
     drawSelf();
   }
 
+  void addToCoinTotal(Coin... coins) {
+    for (Coin coin : coins) {
+      totalCoins += coin.getValue();
+    }
+  }
+  
+  int getCoinCount() {
+   return totalCoins; 
+  }
+
+  void addToJumpBoostTotal(JumpBoost... jumpBoosts) {
+    for (JumpBoost jumpBoost : jumpBoosts) {
+      totalJumpBoosts += jumpBoost.getValue();
+    }
+  }
+  
+  int getJumpBoostCount() {
+    return totalJumpBoosts;
+  }
+
+  void addToFlamethrowerAmmo(FlameThrowerAmmo... ammo) {
+    for (FlameThrowerAmmo throwerAmmo : ammo) {
+      totalFlamethrowerAmmo += throwerAmmo.getValue();
+    }
+  }
+  
+  int getFlamethrowerAmmoCount() {
+   return totalFlamethrowerAmmo; 
+  }
+  
+  void addToTimeBoostTotal(TimeBoost... timeBoosts) {
+   for (TimeBoost timeBoost : timeBoosts) {
+    totalTimeBoostInSeconds += timeBoost.getValue(); 
+   }
+  }
+  
+  int getTimeBoostTotal() {
+   return totalTimeBoostInSeconds; 
+  }
+  
+  void addToTotalHealth(Health... hearts) {
+    for (Health heart : hearts) {
+     health += heart.getValue(); 
+    }
+  }
+
+  int getHealth() {
+    return health;
+  }
+
+  int getScore() {
+    return score;
+  }
+
   protected abstract void drawSelf();
   protected abstract float getWidth();
   protected abstract float getHeight();
+  abstract void takeDamage();
+  abstract void incrementScore();
 }

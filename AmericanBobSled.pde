@@ -5,8 +5,8 @@ class AmericanBobSled extends BaseBobSled {
   }
 
   protected void drawSelf() {
-    float x = getPositionX();
-    float sledBottom = getSledBottom();
+    float x = getLeftX();
+    float sledBottom = getBottomY();
     float sledTop = sledBottom - 40;
 
     //bob sled
@@ -94,5 +94,13 @@ class AmericanBobSled extends BaseBobSled {
   }
   protected float getHeight() {
     return 68;
+  }
+  
+  void takeDamage() {
+    health -= 25;
+  }
+  
+  void incrementScore() {
+   score += 105; 
   }
 }

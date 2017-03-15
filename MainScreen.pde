@@ -6,8 +6,6 @@ class MainScreen extends BaseGameScreen {
   float treeOneX;
   float treeTwoX;
 
-  int score;
-  int health;
   int timeAllowed;
   int startMillis;
   int coinsCollected;
@@ -21,8 +19,15 @@ class MainScreen extends BaseGameScreen {
   Health collectableHealth;
   JumpBoost jumpBoost;
   TimeBoost timeBoost;
-  FlameThrower flameThrower;
-  
+  FlameThrowerAmmo flameThrower;
+
+  CoinEightBitImageGenerator coinGenerator;
+  FlameEightBitImageGenerator flameGenerator;
+  HeartEightBitImageGenerator heartGenerator;
+  JumpArrowEightBitImageGenerator jumpGenerator;
+
+
+
   Minim minim;
   AudioPlayer jamaicanAmbianceAudioPlayer;
   AudioPlayer americanAmbianceAudioPlayer;
@@ -41,12 +46,12 @@ class MainScreen extends BaseGameScreen {
       obstacles[i] = new Obstacle(lastPosition, groundLevel, speed, i > 16);
     }
     loadMusicFiles();
-    hudFont = createFont("slkscre.ttf", 24);
-    coin = new Coin(100, groundLevel, 0);
-    collectableHealth = new Health(150, groundLevel, 0);
-    jumpBoost = new JumpBoost(210, groundLevel, 0);
-    timeBoost = new TimeBoost(260, groundLevel, 0);
-    flameThrower = new FlameThrower(310, groundLevel, 0);
+    initHUDElements();
+    coin = new Coin(100, groundLevel, 300, 0);
+    collectableHealth = new Health(350, groundLevel, 300, 0);
+    jumpBoost = new JumpBoost(610, groundLevel, 300, 0);
+    timeBoost = new TimeBoost(400, groundLevel, 300, 0);
+    flameThrower = new FlameThrowerAmmo(680, groundLevel, 300, 0);
   }
 
   private void loadMusicFiles() {
@@ -55,6 +60,14 @@ class MainScreen extends BaseGameScreen {
     jamaicanAmbianceAudioPlayer.setGain(-20);
     americanAmbianceAudioPlayer = minim.loadFile("PartyInTheUSA.mp3");
     americanAmbianceAudioPlayer.setGain(-20);
+  }
+
+  private void initHUDElements() {
+    hudFont = createFont("slkscre.ttf", 24);
+    coinGenerator = new CoinEightBitImageGenerator(1.5);
+    flameGenerator = new FlameEightBitImageGenerator(1.5);
+    heartGenerator = new HeartEightBitImageGenerator(2);
+    jumpGenerator = new JumpArrowEightBitImageGenerator(1);
   }
 
   void reset(Map<String, Object> gameStateValues) {
@@ -74,8 +87,7 @@ class MainScreen extends BaseGameScreen {
     for (int i=0; i < obstacles.length; i++) {
       obstacles[i].reset();
     }
-    score = 0;
-    health = 100;
+    player.reset();
     timeAllowed = 300;
     startMillis = millis();
 
@@ -103,6 +115,7 @@ class MainScreen extends BaseGameScreen {
     drawTrees();
 
     coin.updateForDraw();
+    if (coin.didCollide(player));
     collectableHealth.updateForDraw();
     jumpBoost.updateForDraw();
     timeBoost.updateForDraw();
@@ -116,10 +129,10 @@ class MainScreen extends BaseGameScreen {
       //else obstacle.updateForDraw();
       obstacle.updateForDraw();
       if (obstacle.didCollide(player)) {
-        health -= 25;
+        player.takeDamage();
         //        disableForegroundDraw = true;
       } else if (obstacle.didPassPlayer(player)) {
-        score += 100;
+        player.incrementScore();
       }
     }
     drawHUD();
@@ -161,7 +174,7 @@ class MainScreen extends BaseGameScreen {
   }
 
   private void drawHUD() {
-    int currentTime = timeAllowed - (int)((millis() - startMillis)/1000);
+    int currentTime = timeAllowed + player.getTimeBoostTotal() - (int)((millis() - startMillis)/1000);
     //println("Frame Counter: " + frameCounter + ". Frame Rate: " + frameRate + ". Counter/Rate: " + frameCounter/frameRate);
     textFont(hudFont);
     fill(#778899);
@@ -174,55 +187,38 @@ class MainScreen extends BaseGameScreen {
       (Math.abs(seconds) < 10 ? ("0" + seconds) : seconds), width/2, 10);
 
     textAlign(LEFT, TOP);
-    text("Score: " + score, 10, 10);
+    text("Score: " + player.getScore(), 10, 10);
     //health
-    text(health, width - 85, 10);
-    drawHeart();
-  }
-
-  private void drawHeart() {
-    int heartStart = width - 120;
-    int heartTop = 13;
-    noStroke();
-    fill(255, 1, 32);
-    rect(heartStart + 2, heartTop + 2, 4, 12);
-    rect(heartStart + 6, heartTop + 2, 4, 16); 
-    rect(heartStart + 10, heartTop + 4, 6, 18); 
-    rect(heartStart + 16, heartTop + 2, 4, 16); 
-    rect(heartStart + 20, heartTop + 2, 4, 12); 
-
+    text(player.getHealth(), width - 85, 10);
+    heartGenerator.drawImage(width - 120, 13);
     fill(#778899);
-    rect(heartStart, heartTop + 4, 2, 8);
-    rect(heartStart + 2, heartTop + 2, 2, 2);
-    rect(heartStart + 4, heartTop, 6, 2);
-    rect(heartStart + 10, heartTop + 2, 2, 2);
-    rect(heartStart + 12, heartTop + 4, 2, 2);
-    rect(heartStart + 14, heartTop + 2, 2, 2);
-    rect(heartStart + 16, heartTop, 6, 2);
-    rect(heartStart + 22, heartTop + 2, 2, 2);
-    rect(heartStart + 24, heartTop + 4, 2, 8);
+    textSize(24);
+    //Coin HUD
+    coinGenerator.drawImage(30, groundLevel + 25);
+    text("Coins", 30 + coinGenerator.getAdjustedImageWidth() + 10, groundLevel + 25);
+    fill(#778899);
+    textAlign(CENTER, TOP);
+    text("x" + player.getCoinCount(), 30, groundLevel + 25 + coinGenerator.getAdjustedImageHeight(), coinGenerator.getAdjustedImageWidth() + 110, 30);
 
-    //diagonal bottom border
-    rect(heartStart + 2, heartTop + 12, 2, 2);
-    rect(heartStart + 22, heartTop + 12, 2, 2);
+    //Flamethrower HUD
+    flameGenerator.drawImage(300, groundLevel + 25);
+    fill(248, 120, 0);
+    textAlign(LEFT, TOP);
+    text("Flame Ammo", 300 + flameGenerator.getAdjustedImageWidth() + 10, groundLevel + 25);
+    fill(#778899);
+    textAlign(CENTER, TOP);
+    text("x" + player.getFlamethrowerAmmoCount(), 300, groundLevel + 25 + flameGenerator.getAdjustedImageHeight(), flameGenerator.getAdjustedImageWidth() + 210, 30);
 
-    rect(heartStart + 4, heartTop + 14, 2, 2);
-    rect(heartStart + 20, heartTop + 14, 2, 2);
-
-    rect(heartStart + 6, heartTop + 16, 2, 2);
-    rect(heartStart + 18, heartTop + 16, 2, 2);
-
-    rect(heartStart + 8, heartTop + 18, 2, 2);
-    rect(heartStart + 16, heartTop + 18, 2, 2);
-    rect(heartStart + 10, heartTop + 20, 2, 2);
-    rect(heartStart + 14, heartTop + 20, 2, 2);
-
-    rect(heartStart + 12, heartTop + 22, 2, 2);
-
-    fill(255);
-    rect(heartStart + 4, heartTop + 4, 2, 4);
-    rect(heartStart + 6, heartTop + 4, 2, 2);
+    //Jump Boost HUD
+    jumpGenerator.drawImage(650, groundLevel + 25);
+    textAlign(LEFT, TOP);
+    text("Jump Boost", 650 + jumpGenerator.getAdjustedImageWidth() + 10, groundLevel + 25);
+    fill(#778899);
+    textAlign(CENTER, TOP);
+    text("x" + player.getJumpBoostCount(), 650, groundLevel + 25 + jumpGenerator.getAdjustedImageHeight(), jumpGenerator.getAdjustedImageWidth() + 210, 30);
   }
+
+
   private void performCleanup() {
     currentAmbianceAudioPlayer.pause();
   }

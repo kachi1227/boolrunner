@@ -1,72 +1,58 @@
-class Health implements Collectable {
+class Health extends BaseCollectable {
 
   private float startPosX;
-  private int offset;
   private float groundPosY;
-  private float speed;
+  private float distanceFromGround;
 
-  public Health(float posX, float ground, float speedVal) {
+  private HeartEightBitImageGenerator imageGenerator;
+
+  public Health(float posX, float ground, float distanceFromGround, float speed) {
+    super(speed);
     startPosX = posX;
     groundPosY = ground;
-    speedVal = speed;
-    offset = 0;
-  }
-
+    this.distanceFromGround = distanceFromGround;
+    imageGenerator = new HeartEightBitImageGenerator(3);  
+}
 
   public void updateForDraw() {
-    drawHeart();
+    if (isOnScreen() && !isCollected()) drawHeart();
+    updateOffset();
   }
 
   private void drawHeart() {
-    float heartLeft = startPosX;
-    float heartTop = groundPosY - 300;
-
-    noStroke();
-    fill(255, 1, 32);
-    rect(heartLeft + 3, heartTop + 3, 6, 18);
-    rect(heartLeft + 9, heartTop + 3, 6, 24); 
-    rect(heartLeft + 15, heartTop + 6, 9, 27); 
-    rect(heartLeft + 24, heartTop + 3, 6, 24); 
-    rect(heartLeft + 30, heartTop + 3, 6, 18); 
-
-    fill(#778899);
-    rect(heartLeft, heartTop + 6, 3, 12);
-    rect(heartLeft + 3, heartTop + 3, 3, 3);
-    rect(heartLeft + 6, heartTop, 9, 3);
-    rect(heartLeft + 15, heartTop + 3, 3, 3);
-    rect(heartLeft + 18, heartTop + 6, 3, 3);
-    rect(heartLeft + 21, heartTop + 3, 3, 3);
-    rect(heartLeft + 24, heartTop, 9, 3);
-    rect(heartLeft + 33, heartTop + 3, 3, 3);
-    rect(heartLeft + 36, heartTop + 6, 3, 12);
-
-    //diagonal bottom border
-    rect(heartLeft + 3, heartTop + 18, 3, 3);
-    rect(heartLeft + 33, heartTop + 18, 3, 3);
-
-    rect(heartLeft + 6, heartTop + 21, 3, 3);
-    rect(heartLeft + 30, heartTop + 21, 3, 3);
-
-    rect(heartLeft + 9, heartTop + 24, 3, 3);
-    rect(heartLeft + 27, heartTop + 24, 3, 3);
-
-    rect(heartLeft + 12, heartTop + 27, 3, 3);
-    rect(heartLeft + 24, heartTop + 27, 3, 3);
-    rect(heartLeft + 15, heartTop + 30, 3, 3);
-    rect(heartLeft + 21, heartTop + 30, 3, 3);
-
-    rect(heartLeft + 18, heartTop + 33, 3, 3);
-
-    fill(255);
-    rect(heartLeft + 6, heartTop + 6, 3, 6);
-    rect(heartLeft + 9, heartTop + 6, 3, 3);
+    float heartLeft = startPosX - getOffset();
+    float heartTop = groundPosY - distanceFromGround;
+    imageGenerator.drawImage(heartLeft, heartTop);
   }
 
-  public boolean didCollect(BaseBobSled player) {
-    return false;
+  public float getLeftSideX() {
+    return startPosX - getOffset();
   }
 
-  public boolean didCollide(BaseBobSled player) {
-    return false;
+  public float getRightSideX() {
+    return startPosX + getWidth() - getOffset();
+  }
+
+  public float getTopSideY() {
+    return groundPosY - distanceFromGround;
+  }
+
+  public float getBottomSideY() {
+    return groundPosY - distanceFromGround + getHeight();
+  }
+
+  float getWidth() {
+    return imageGenerator.getAdjustedImageWidth();
+  }
+  
+  float getHeight() {
+    return imageGenerator.getAdjustedImageHeight();
+  }
+
+  void onCollided(BaseBobSled player) {
+  }
+
+  public int getValue() {
+    return 15;
   }
 }

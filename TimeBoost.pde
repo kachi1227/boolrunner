@@ -1,26 +1,30 @@
-class TimeBoost implements Collectable {
+class TimeBoost extends BaseCollectable {
 
   private float startPosX;
-  private int offset;
   private float groundPosY;
-  private float speed;
+  private float distanceFromGround;
+  private HourGlassEightBitImageGenerator imageGenerator;
 
-  public TimeBoost(float posX, float ground, float speedVal) {
+  public TimeBoost(float posX, float ground, float distanceFromGround, float speed) {
+    super(speed);
     startPosX = posX;
     groundPosY = ground;
-    speedVal = speed;
-    offset = 0;
+    this.distanceFromGround = distanceFromGround;
+    imageGenerator = new HourGlassEightBitImageGenerator(4);
   }
 
 
   public void updateForDraw() {
-    drawHourGlass();
+    if (isOnScreen() && !isCollected()) drawHourGlass();
+    updateOffset();
   }
 
   private void drawHourGlass() {
-    float glassLeft = startPosX;
-    float glassTop = groundPosY - 300;
-    //30x46 (2 px)
+    float glassLeft = startPosX - getOffset();
+    float glassTop = groundPosY - distanceFromGround;
+    imageGenerator.drawImage(glassLeft, glassTop);
+    glassLeft += 200;
+    //30x46
     noStroke();
     fill(255);
     rect(glassLeft + 4, glassTop + 6, 22, 10);
@@ -80,24 +84,48 @@ class TimeBoost implements Collectable {
 
     rect(glassLeft + 6, glassTop + 28, 2, 4);
     rect(glassLeft + 22, glassTop + 28, 2, 6);
-    
-        rect(glassLeft + 4, glassTop + 30, 2, 6);
+
+    rect(glassLeft + 4, glassTop + 30, 2, 6);
     rect(glassLeft + 24, glassTop + 32, 2, 4);
-    
-            rect(glassLeft + 2, glassTop + 34, 2, 6);
+
+    rect(glassLeft + 2, glassTop + 34, 2, 6);
     rect(glassLeft + 26, glassTop + 34, 2, 6);
-        rect(glassLeft, glassTop + 40, 30, 6);
-        
-        fill(#CD853F);
-        rect(glassLeft + 2, glassTop + 2, 26, 2);
-                rect(glassLeft + 2, glassTop + 42, 26, 2);
+    rect(glassLeft, glassTop + 40, 30, 6);
+
+    fill(#CD853F);
+    rect(glassLeft + 2, glassTop + 2, 26, 2);
+    rect(glassLeft + 2, glassTop + 42, 26, 2);
+  }
+  
+  public float getLeftSideX() {
+    return startPosX - getOffset();
   }
 
-  public boolean didCollect(BaseBobSled player) {
-    return false;
+  public float getRightSideX() {
+    return startPosX + getWidth() - getOffset();
   }
 
-  public boolean didCollide(BaseBobSled player) {
-    return false;
+  public float getTopSideY() {
+    return groundPosY - distanceFromGround;
+  }
+  
+  public float getBottomSideY() {
+    return groundPosY - distanceFromGround + getHeight();
+  }
+
+  float getWidth() {
+    return imageGenerator.getAdjustedImageWidth();
+  }
+  
+  float getHeight() {
+    return imageGenerator.getAdjustedImageHeight();
+  }
+
+  void onCollided(BaseBobSled player) {
+    
+  }
+  
+  public int getValue() {
+   return 15; 
   }
 }
