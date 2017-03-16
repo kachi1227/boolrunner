@@ -1,4 +1,4 @@
-abstract class BaseCollidable {
+abstract class BaseCollidable implements Moveable {
 
   private float offset;
   private float speed;
@@ -6,11 +6,14 @@ abstract class BaseCollidable {
   BaseCollidable(float speed) {
     this.speed = speed;
     offset = 0;
-    state = CollidableState.NOT_SHOWN;
   }
 
   void setSpeed(float speed) {
     this.speed = speed;
+  }
+  
+  void setOffset(float offset) {
+   this.offset = offset; 
   }
 
   void updateOffset() {
@@ -23,15 +26,22 @@ abstract class BaseCollidable {
 
   void reset() {
     offset = 0;
-    state = CollidableState.NOT_SHOWN;
   }
 
+  public int getRelationToScreen() {
+    if (getLeftSideX() > width) return Moveable.RIGHT_OF_SCREEN;
+    else if (getLeftSideX() < 0 && getRightSideX() < 0) return Moveable.LEFT_OF_SCREEN;
+    else return Moveable.ON_SCREEN;
+  }
+  
   public boolean isOnScreen() {
-    boolean onScreen =  (0 < getLeftSideX() && getLeftSideX() < width) || (0 < getRightSideX() && getRightSideX() < width);
-    if (state == CollidableState.NOT_SHOWN && onScreen) {
-      state = CollidableState.SHOWN;
-    }
-    return onScreen;
+   return getRelationToScreen() == Moveable.ON_SCREEN; 
+  }
+  
+  public boolean onScreenAfterDistance(float distanceCovered) {
+    float potentialLeftSide = getLeftSideX() + distanceCovered;
+    float potentialRightSide = getRightSideX() + distanceCovered;
+    return (0 < potentialLeftSide && potentialLeftSide < width) || (0 < potentialRightSide && potentialRightSide < width);
   }
 
   abstract void updateForDraw();

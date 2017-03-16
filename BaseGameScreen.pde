@@ -1,11 +1,11 @@
 abstract class BaseGameScreen {
 
-  float speed = 3; //suggested max of 13
+  float speed = 14; //suggested max of 13
   int groundLevel;
 
 
   ArrayList<Snow> snowflakes = new ArrayList<Snow>();
-
+  
   ScreenChangeDelegate delegate;
 
   private PFont titleFont;

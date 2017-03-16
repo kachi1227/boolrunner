@@ -1,7 +1,7 @@
 class AmericanBobSled extends BaseBobSled {
 
-  AmericanBobSled(float x, float ground, float gravity) {
-    super(x, ground, gravity);
+  AmericanBobSled(float x, float ground, float gravity, ProjectileDelegate projDelegate) {
+    super(x, ground, gravity, projDelegate);
   }
 
   protected void drawSelf() {

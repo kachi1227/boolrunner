@@ -1,3 +1,4 @@
+import java.util.Collection;
 class MainScreen extends BaseGameScreen {
 
   final float WORLD_GRAVITY = 0.75;
@@ -11,8 +12,10 @@ class MainScreen extends BaseGameScreen {
   int coinsCollected;
 
   int runnerX;
+  float totalDistanceTravelled;
 
   BaseBobSled player;
+  int obstacleStartIndex = 0;
   Obstacle[] obstacles = new Obstacle[20]; //fixed values..?
   //Coin[] coins = new Coin[3];
   Coin coin;
@@ -26,7 +29,7 @@ class MainScreen extends BaseGameScreen {
   HeartEightBitImageGenerator heartGenerator;
   JumpArrowEightBitImageGenerator jumpGenerator;
 
-
+  List<BaseProjectile> activeProjectiles;
 
   Minim minim;
   AudioPlayer jamaicanAmbianceAudioPlayer;
@@ -42,16 +45,17 @@ class MainScreen extends BaseGameScreen {
     super(delegate);
     float lastPosition = -1;
     for (int i=0; i < obstacles.length; i++) {
-      lastPosition = lastPosition == -1 ? width : (lastPosition + random(700, 800));
+      lastPosition = lastPosition == -1 ? width : (lastPosition + random(900, 1200));
       obstacles[i] = new Obstacle(lastPosition, groundLevel, speed, i > 16);
     }
+    activeProjectiles = new ArrayList();
     loadMusicFiles();
     initHUDElements();
     coin = new Coin(100, groundLevel, 300, 0);
-    collectableHealth = new Health(350, groundLevel, 300, 0);
-    jumpBoost = new JumpBoost(610, groundLevel, 300, 0);
-    timeBoost = new TimeBoost(400, groundLevel, 300, 0);
-    flameThrower = new FlameThrowerAmmo(680, groundLevel, 300, 0);
+    collectableHealth = new Health(100, groundLevel, 300, 0);
+    jumpBoost = new JumpBoost(100, groundLevel, 300, 0);
+    timeBoost = new TimeBoost(100, groundLevel, 300, 0);
+    flameThrower = new FlameThrowerAmmo(100, groundLevel, 300, 0);
   }
 
   private void loadMusicFiles() {
@@ -87,8 +91,9 @@ class MainScreen extends BaseGameScreen {
     for (int i=0; i < obstacles.length; i++) {
       obstacles[i].reset();
     }
+    obstacleStartIndex = 0;
     player.reset();
-    timeAllowed = 300;
+    timeAllowed = 120;
     startMillis = millis();
 
     coinsCollected = 0;
@@ -98,44 +103,106 @@ class MainScreen extends BaseGameScreen {
     if (currentAmbianceAudioPlayer != null) {
       currentAmbianceAudioPlayer.pause();
     }
+    ProjectileDelegate projDelegate = new ProjectileDelegate() {
+      public void addProjectileToWorld(BaseProjectile projectile) {
+        addProjectileToActiveList(projectile);
+      }
+    };
     if (playerType == PlayerType.JAMAICAN) {
-      player = new JamaicanBobSled(runnerX, groundLevel, WORLD_GRAVITY);
+      player = new JamaicanBobSled(runnerX, groundLevel, WORLD_GRAVITY, projDelegate);
       currentAmbianceAudioPlayer = jamaicanAmbianceAudioPlayer;
     } else {
-      player = new AmericanBobSled(runnerX, groundLevel, WORLD_GRAVITY);
+      player = new AmericanBobSled(runnerX, groundLevel, WORLD_GRAVITY, projDelegate);
       currentAmbianceAudioPlayer = americanAmbianceAudioPlayer;
     }
     currentAmbianceAudioPlayer.cue(0);
-    //currentAmbianceAudioPlayer.loop();
+    currentAmbianceAudioPlayer.loop();
+  }
+
+  private void addProjectileToActiveList(BaseProjectile projectile) {
+    activeProjectiles.add(projectile);
   }
 
   void drawScreen() {
+    //println(frameRate);
     drawBackground();
     drawCloud();    
     drawTrees();
 
     coin.updateForDraw();
-    if (coin.didCollide(player));
+    coin.didCollide(player);
     collectableHealth.updateForDraw();
+    collectableHealth.didCollide(player);
     jumpBoost.updateForDraw();
+    jumpBoost.didCollide(player);
     timeBoost.updateForDraw();
+    timeBoost.didCollide(player);
     flameThrower.updateForDraw();
+    flameThrower.didCollide(player);
 
     player.updateForDrawAtPosition();
+
     //TODO increase starting i value whenever obstacle passes or collides with player
-    for (int i=0; i < obstacles.length; i++) {
+    List<Obstacle> visibleObstacles = new ArrayList();
+    for (int i=obstacleStartIndex; i < obstacles.length; i++) {
       Obstacle obstacle = obstacles[i];
-      //if (disableForegroundDraw) obstacle.updateForDisabled();
-      //else obstacle.updateForDraw();
-      obstacle.updateForDraw();
-      if (obstacle.didCollide(player)) {
-        player.takeDamage();
-        //        disableForegroundDraw = true;
-      } else if (obstacle.didPassPlayer(player)) {
-        player.incrementScore();
+      if (obstacle.isOnScreen()) {
+        //if (disableForegroundDraw) obstacle.updateForDisabled();
+        //else obstacle.updateForDraw();
+        obstacle.updateForDraw(false);
+        checkForPlayerInteraction(obstacle);
+        if (!obstacle.isDestroyed()) visibleObstacles.add(obstacle);
+      } else if (obstacle.onScreenAfterDistance(totalDistanceTravelled)) {
+        obstacle.setOffset(totalDistanceTravelled);
+        obstacle.updateForDraw(false);
+        checkForPlayerInteraction(obstacle);
+        if (!obstacle.isDestroyed()) visibleObstacles.add(obstacle);
+      } else if (obstacle.getRelationToScreen() == Moveable.LEFT_OF_SCREEN) {
+        obstacleStartIndex = i + 1;
+      } else break;
+    }
+
+    //we should get box representing first obstacle on screen and see if projectile hits it...
+    //keep track of the index with the projectile that's furtherest ahead.
+    Map<String, BaseProjectile> test = new HashMap();
+    for (int i=activeProjectiles.size() - 1; i >= 0; i--) {
+      BaseProjectile projectile = activeProjectiles.get(i);
+      if (projectile.isOnScreen()) {
+        projectile.updateForDraw();
+        String projKey = projectile.getTopSideY() + "" + projectile.getHeight();
+        if (test.containsKey(projKey)) {
+          BaseProjectile mainProjectileAtHeight = test.get(projKey);
+          if (projectile.getRightSideX() > mainProjectileAtHeight.getRightSideX()) {
+           test.put(projKey, projectile); 
+          }
+        } else {
+          test.put(projKey, projectile);
+        }
+      } else {
+        activeProjectiles.remove(projectile);
       }
     }
+    for (BaseProjectile projectile : test.values()) {
+      for (Obstacle obstacle : visibleObstacles) {
+       if (projectile.getBottomSideY() > obstacle.getTopSideY()) {
+         if (!obstacle.isDestroyed() && projectile.didPenetrateHitRect(obstacle.getLeftSideX(), obstacle.getTopSideY(), obstacle.getRightSideX(), groundLevel)) {
+            obstacle.destroy();
+            activeProjectiles.remove(projectile);
+         }
+       }
+      }
+    }
+    
+    totalDistanceTravelled += speed;
     drawHUD();
+  }
+
+  private void checkForPlayerInteraction(Obstacle obstacle) {
+    if (obstacle.didCollide(player)) {
+      player.takeDamage();
+    } else if (obstacle.didPassPlayer(player)) {
+      player.incrementScore();
+    }
   }
 
 
@@ -200,6 +267,13 @@ class MainScreen extends BaseGameScreen {
     textAlign(CENTER, TOP);
     text("x" + player.getCoinCount(), 30, groundLevel + 25 + coinGenerator.getAdjustedImageHeight(), coinGenerator.getAdjustedImageWidth() + 110, 30);
 
+    if (player.getEquippedItemKey() == BaseBobSled.KEY_FLAMETHROWER) {
+      noFill();
+      stroke(#778899);
+      strokeWeight(3);
+      rect(295, groundLevel + 15, jumpGenerator.getAdjustedImageWidth() + 235, jumpGenerator.getAdjustedImageHeight() + 40);
+    }
+    noStroke();
     //Flamethrower HUD
     flameGenerator.drawImage(300, groundLevel + 25);
     fill(248, 120, 0);
@@ -209,6 +283,13 @@ class MainScreen extends BaseGameScreen {
     textAlign(CENTER, TOP);
     text("x" + player.getFlamethrowerAmmoCount(), 300, groundLevel + 25 + flameGenerator.getAdjustedImageHeight(), flameGenerator.getAdjustedImageWidth() + 210, 30);
 
+    if (player.getEquippedItemKey() == BaseBobSled.KEY_JUMP_BOOST) {
+      noFill();
+      stroke(#778899);
+      strokeWeight(3);
+      rect(645, groundLevel + 15, jumpGenerator.getAdjustedImageWidth() + 220, jumpGenerator.getAdjustedImageHeight() + 40);
+    }
+    noStroke();
     //Jump Boost HUD
     jumpGenerator.drawImage(650, groundLevel + 25);
     textAlign(LEFT, TOP);
@@ -226,11 +307,24 @@ class MainScreen extends BaseGameScreen {
   boolean handleKeyPressed() {
     boolean handled = super.handleKeyPressed();
     if (!handled) {
+      //println("YOOOO");
       //if space is pressed, perform jump.
       //if enter is used to start game, have that occur here (could also occur in mousePressed)
       if ( key == ' ' && !player.isJumping()) {
+        println("day");
         player.performJump();
+      } else if (key == '1') {
+        println("day2");
+        player.setEquippedItemKey(player.getEquippedItemKey() == BaseBobSled.KEY_JUMP_BOOST ? -1 : BaseBobSled.KEY_JUMP_BOOST);
+      } else if (key == '2') {
+        println("day3");
+        player.setEquippedItemKey(player.getEquippedItemKey() == BaseBobSled.KEY_FLAMETHROWER ? - 1 : BaseBobSled.KEY_FLAMETHROWER);
+      } else if (keyCode == ENTER || keyCode == RETURN) {
+        if (activeProjectiles.size() < 5) {
+          player.fireProjectile();
+        }
       }
+
       return true;
     }
     return false;

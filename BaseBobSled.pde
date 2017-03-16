@@ -1,4 +1,13 @@
+import java.util.List;
+import java.util.ArrayList;
+
 abstract class BaseBobSled {
+
+  final static int KEY_JUMP_BOOST = 0;
+  final static int KEY_FLAMETHROWER = 1;
+  final static int KEY_SNOWTHROWER = 2;
+  final static int KEY_ICETHROWER = 3;
+  final static int KEY_SHIELD = 4;
 
   final int STANDARD_JUMP_VELOCITY = 20;
 
@@ -12,30 +21,71 @@ abstract class BaseBobSled {
   protected int score;
   protected int health;
   private int totalCoins;
-  private int totalJumpBoosts;
-  private int totalFlamethrowerAmmo;
   private int totalTimeBoostInSeconds;
 
-  BaseBobSled(float x, float ground, float gravity) {
+  //private int totalJumpBoosts;
+  //private int totalFlamethrowerAmmo;
+
+
+  private Map<Integer, List<BaseCollectable>> inventory;
+  private int equippedKey = -1;
+
+  private ProjectileDelegate projectileDelegate;
+
+  BaseBobSled(float x, float ground, float gravity, ProjectileDelegate projDelegate) {
     xPosition = x;
     groundLevel = ground;
     sledBottom = groundLevel;
     this.gravity = gravity;
+    inventory = new HashMap();
+    projectileDelegate = projDelegate;
     reset();
   }
 
   void reset() {
     score = 0;
     health = 100;
+    inventory.clear();
+    equippedKey = -1;
   }
 
   public void performJump() {
-    //performingJump = true;
-    jumpVel = STANDARD_JUMP_VELOCITY;
+    if (isJumping()) return;
+
+    performingJump = true;
+    if (equippedKey == KEY_JUMP_BOOST) {
+      List<BaseCollectable> jumpBoosts = inventory.get(equippedKey);
+      if (jumpBoosts == null || jumpBoosts.isEmpty()) jumpVel = STANDARD_JUMP_VELOCITY;
+      else {
+        BaseCollectable collectable = jumpBoosts.remove(jumpBoosts.size() - 1);
+        jumpVel = STANDARD_JUMP_VELOCITY * 1.25;
+        collectable.onUsed();
+      }
+    } else {
+      jumpVel = STANDARD_JUMP_VELOCITY;
+    }
   }
 
   public boolean isJumping() {
     return performingJump;
+  }
+
+  public void fireProjectile() {
+    if (!isProjectileEquipped()) return;
+
+    List<BaseCollectable> projectileList = inventory.get(equippedKey);
+    if (projectileList != null && !projectileList.isEmpty()) {
+      BaseCollectable collectable = projectileList.remove(projectileList.size() - 1);
+      if (collectable instanceof Projectilable) {
+        projectileDelegate.addProjectileToWorld(((Projectilable)collectable).convertToProjectile(getRightX() + 5, getTopY() + getHeight()/2));
+        collectable.onUsed();
+      }
+    }
+  }
+
+  private boolean isProjectileEquipped() {
+    return equippedKey == KEY_FLAMETHROWER || equippedKey == KEY_ICETHROWER
+      || equippedKey == KEY_SNOWTHROWER;
   }
 
   public float getLeftX() {
@@ -70,44 +120,58 @@ abstract class BaseBobSled {
       totalCoins += coin.getValue();
     }
   }
-  
+
   int getCoinCount() {
-   return totalCoins; 
+    return totalCoins;
   }
 
   void addToJumpBoostTotal(JumpBoost... jumpBoosts) {
+    List<BaseCollectable> list = inventory.get(BaseBobSled.KEY_JUMP_BOOST);
+    if (list == null) {
+      list = new ArrayList();
+      inventory.put(BaseBobSled.KEY_JUMP_BOOST, list);
+    }
     for (JumpBoost jumpBoost : jumpBoosts) {
-      totalJumpBoosts += jumpBoost.getValue();
+      list.add(jumpBoost);
     }
   }
-  
+
   int getJumpBoostCount() {
-    return totalJumpBoosts;
+    List<BaseCollectable> list = inventory.get(BaseBobSled.KEY_JUMP_BOOST);
+    return list == null || list.isEmpty() ? 0 : (list.size() * list.get(0).getValue());
   }
 
   void addToFlamethrowerAmmo(FlameThrowerAmmo... ammo) {
+    List<BaseCollectable> list = inventory.get(BaseBobSled.KEY_FLAMETHROWER);
+    if (list == null) {
+      list = new ArrayList();
+      inventory.put(BaseBobSled.KEY_FLAMETHROWER, list);
+    }
     for (FlameThrowerAmmo throwerAmmo : ammo) {
-      totalFlamethrowerAmmo += throwerAmmo.getValue();
+      for (int i=0; i < throwerAmmo.getValue(); i++) {
+        list.add(throwerAmmo);
+      }
     }
   }
-  
+
   int getFlamethrowerAmmoCount() {
-   return totalFlamethrowerAmmo; 
+    List<BaseCollectable> list = inventory.get(BaseBobSled.KEY_FLAMETHROWER);
+    return list == null ? 0 : list.size();
   }
-  
+
   void addToTimeBoostTotal(TimeBoost... timeBoosts) {
-   for (TimeBoost timeBoost : timeBoosts) {
-    totalTimeBoostInSeconds += timeBoost.getValue(); 
-   }
+    for (TimeBoost timeBoost : timeBoosts) {
+      totalTimeBoostInSeconds += timeBoost.getValue();
+    }
   }
-  
+
   int getTimeBoostTotal() {
-   return totalTimeBoostInSeconds; 
+    return totalTimeBoostInSeconds;
   }
-  
+
   void addToTotalHealth(Health... hearts) {
     for (Health heart : hearts) {
-     health += heart.getValue(); 
+      health += heart.getValue();
     }
   }
 
@@ -117,6 +181,14 @@ abstract class BaseBobSled {
 
   int getScore() {
     return score;
+  }
+
+  void setEquippedItemKey(int inventoryKey) {
+    equippedKey = inventoryKey;
+  }
+
+  int getEquippedItemKey() {
+    return equippedKey;
   }
 
   protected abstract void drawSelf();

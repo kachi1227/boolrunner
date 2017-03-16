@@ -1,7 +1,7 @@
 class JamaicanBobSled extends BaseBobSled {
 
-  JamaicanBobSled(float x, float ground, float gravity) {
-    super(x, ground, gravity);
+  JamaicanBobSled(float x, float ground, float gravity, ProjectileDelegate projDelegate) {
+    super(x, ground, gravity, projDelegate);
   }
 
   protected void drawSelf() {

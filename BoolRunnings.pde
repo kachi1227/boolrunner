@@ -2,7 +2,7 @@ import java.util.Map;
 import ddf.minim.*;
 
 enum GameScreen {
-  START, CHOOSE_PLAYER, MAIN, REWARD, HIGH_SCORE;
+  START, CHOOSE_PLAYER, MAIN, BATTLE, REWARD, HIGH_SCORE;
 }
 
 enum PlayerType {
@@ -10,7 +10,16 @@ enum PlayerType {
 }
 
 enum CollidableState {
- NOT_SHOWN, SHOWN, COLLIDED, PASSED; 
+ COLLIDED, PASSED; 
+}
+
+interface Moveable {
+ int LEFT_OF_SCREEN = 0;
+ int ON_SCREEN = 1;
+ int RIGHT_OF_SCREEN = 1;
+ 
+ int getRelationToScreen();
+ 
 }
 
 interface ScreenChangeDelegate {
@@ -20,8 +29,7 @@ interface ScreenChangeDelegate {
   void restart();
 }
 
-
-GameScreen currentScreen = GameScreen.MAIN;
+GameScreen currentScreen = GameScreen.START;
 Map<GameScreen, BaseGameScreen> screenMap;
 
 void setup() {
@@ -39,6 +47,7 @@ void setup() {
   screenMap.put(GameScreen.START, new StartGameScreen(screenDelegate));
   screenMap.put(GameScreen.CHOOSE_PLAYER, new ChoosePlayerScreen(screenDelegate));
   screenMap.put(GameScreen.MAIN, new MainScreen(screenDelegate));
+  screenMap.put(GameScreen.BATTLE, new BossBattleScreen(screenDelegate));
   screenMap.put(GameScreen.REWARD, new RewardScreen(screenDelegate));
   screenMap.put(GameScreen.HIGH_SCORE, new HighScoreScreen(screenDelegate));
 

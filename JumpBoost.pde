@@ -3,15 +3,19 @@ class JumpBoost extends BaseCollectable {
   private float startPosX;
   private float groundPosY;
   private float distanceFromGround;
-  
+
   JumpArrowEightBitImageGenerator imageGenerator;
+  AudioPlayer collectionSoundPlayer;
 
   public JumpBoost(float posX, float ground, float distanceFromGround, float speed) {
     super(speed);
     startPosX = posX;
     groundPosY = ground;
     this.distanceFromGround = distanceFromGround;
-    imageGenerator = new JumpArrowEightBitImageGenerator(5);
+    imageGenerator = new JumpArrowEightBitImageGenerator(3);
+    Minim minim = new Minim(BoolRunnings.this);
+    collectionSoundPlayer = minim.loadFile("collide_jump_boost.mp3");
+    collectionSoundPlayer.setGain(-15);
   }
 
   public void updateForDraw() {
@@ -24,7 +28,7 @@ class JumpBoost extends BaseCollectable {
     float boostTop = groundPosY - distanceFromGround;
     imageGenerator.drawImage(boostLeft, boostTop);
   }
-  
+
   public float getLeftSideX() {
     return startPosX - getOffset();
   }
@@ -36,7 +40,7 @@ class JumpBoost extends BaseCollectable {
   public float getTopSideY() {
     return groundPosY - distanceFromGround;
   }
-  
+
   public float getBottomSideY() {
     return groundPosY - distanceFromGround + getHeight();
   }
@@ -44,13 +48,14 @@ class JumpBoost extends BaseCollectable {
   float getWidth() {
     return imageGenerator.getAdjustedImageWidth();
   }
-  
+
   float getHeight() {
     return imageGenerator.getAdjustedImageHeight();
   }
 
   void onCollided(BaseBobSled player) {
-    
+    collectionSoundPlayer.play();
+    player.addToJumpBoostTotal(this);
   }
 
   public int getValue() {
