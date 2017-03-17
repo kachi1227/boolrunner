@@ -44,12 +44,16 @@ abstract class BaseBobSled {
     inventory.clear();
     equippedKey = -1;
   }
-
+  
   public void performJump() {
+   performJump(false); 
+  }
+
+  private void performJump(boolean useBoost) {
     if (isJumping()) return;
 
     performingJump = true;
-    if (equippedKey == KEY_JUMP_BOOST) {
+    if (equippedKey == KEY_JUMP_BOOST && useBoost) {
       List<BaseCollectable> jumpBoosts = inventory.get(equippedKey);
       if (jumpBoosts == null || jumpBoosts.isEmpty()) jumpVel = STANDARD_JUMP_VELOCITY;
       else {
@@ -65,10 +69,13 @@ abstract class BaseBobSled {
   public boolean isJumping() {
     return performingJump;
   }
+  
+  public void useEquipped() {
+    if (isProjectileEquipped()) fireProjectile();
+    else if (equippedKey == KEY_JUMP_BOOST) performJump(true);
+  }
 
-  public void fireProjectile() {
-    if (!isProjectileEquipped()) return;
-
+  private void fireProjectile() {
     if (equippedKey == BaseBobSled.KEY_SNOWTHROWER) {
       projectileDelegate.addProjectileToWorld(new SnowballProjectile(getRightX() + 5, getTopY() + getHeight()/2, 6));
     } else {
@@ -166,6 +173,24 @@ abstract class BaseBobSled {
     List<BaseCollectable> list = inventory.get(BaseBobSled.KEY_FLAMETHROWER);
     return list == null ? 0 : list.size();
   }
+  
+  void addToIcicles(Icicle... icicles) {
+    List<BaseCollectable> list = inventory.get(BaseBobSled.KEY_ICETHROWER);
+    if (list == null) {
+      list = new ArrayList();
+      inventory.put(BaseBobSled.KEY_ICETHROWER, list);
+    }
+    for (Icicle icicle : icicles) {
+      for (int i=0; i < icicle.getValue(); i++) {
+        list.add(icicle);
+      }
+    }
+  }
+
+  int getIcicleCount() {
+    List<BaseCollectable> list = inventory.get(BaseBobSled.KEY_ICETHROWER);
+    return list == null ? 0 : list.size();
+  }
 
   void addToTimeBoostTotal(TimeBoost... timeBoosts) {
     for (TimeBoost timeBoost : timeBoosts) {
@@ -201,6 +226,10 @@ abstract class BaseBobSled {
 
   void incrementScoreForProjectileHit() {
     score += 40;
+  }
+
+  public void takeDamageFromProjectileHit(BaseProjectile projectile) {
+    health-= projectile.damageToPlayer();
   }
 
   protected abstract void drawSelf();

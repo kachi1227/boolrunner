@@ -1,26 +1,28 @@
-class FireballProjectile extends BaseProjectile {
-
+class IcicleProjectile extends BaseProjectile {
+ 
   private float startPosX;
   private float startPosY;
 
-  FireballProjectile(float posX, float ground, float speed) {
+  IcicleProjectile(float posX, float ground, float speed) {
     super(speed);
     startPosX = posX;
     startPosY = ground;
   }
 
   void updateForDraw() {
-    drawFireball();
+    drawIcicle();
     updateOffset();
   }
   
-  private void drawFireball() {
+  private void drawIcicle() {
     noStroke();
     fill(248, 120, 0);
-    triangle(getLeftSideX(), getTopSideY() + getHeight()/2, getLeftSideX() + (getWidth() * 2/3), getTopSideY(), 
-        getOffset() + startPosX + (getWidth() * 2/3), getBottomSideY());
+    
+    triangle(getLeftSideX() + getHeight()/4, getTopSideY(), getRightSideX(), getTopSideY() + getHeight()/2,
+             getLeftSideX() + getHeight()/4, getBottomSideY());
     fill(248, 192, 0);
-    ellipse(getRightSideX() - getHeight()/2, getTopSideY() + getHeight()/2, getHeight(), getHeight());
+    ellipse(getLeftSideX() + getHeight()/4, getTopSideY() + getHeight()/2, getHeight()/2, getHeight());
+
 }
 
   int damageToPlayer() {
@@ -53,4 +55,6 @@ class FireballProjectile extends BaseProjectile {
   float getHeight() {
     return 24;
   }
+  
+  
 }

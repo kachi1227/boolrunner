@@ -28,6 +28,13 @@ class SnowballProjectile extends BaseProjectile {
     line(xStart, getTopSideY() + getHeight()/2, xEnd + (sign * (getHeight() + 5)), getTopSideY() + getHeight()/2);
     line(xStart - (sign * 10), getBottomSideY(), xEnd + (sign * (getHeight()/2 + 5)), getBottomSideY());
   }
+  
+    int damageToPlayer() {
+   return 2; 
+  }
+  int damageToBoss() {
+    return 1;
+  }
 
   float getLeftSideX() {
     return startPosX + getOffset();

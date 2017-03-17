@@ -55,7 +55,7 @@ abstract class BaseBoss {
   }
 
   public void fireProjectile() {
-          projectileDelegate.addProjectileToWorld(new SnowballProjectile(getLeftX() - 5, getTopY() + getHeight()/2, -8));
+    projectileDelegate.addProjectileToWorld(new SnowballProjectile(getLeftX() - 5, getTopY() + getHeight()/2, -8));
   }
 
   public float getLeftX() {
@@ -100,6 +100,14 @@ abstract class BaseBoss {
 
   public float getHealth() {
     return health;
+  }
+
+  public void takeDamageFromProjectileHit(BaseProjectile projectile) {
+    health-= projectile.damageToBoss();
+  }
+
+  public void updateSledRight(float newSledRight) {
+    sledRight = newSledRight;
   }
 
   protected abstract void drawSelf();

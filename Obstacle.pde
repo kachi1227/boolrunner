@@ -71,6 +71,10 @@ class Obstacle extends BaseCollidable {
     return groundPosY - getHeight();
   }
   
+  public float getWidth() {
+   return obstacleWidth; 
+  }
+  
   public float getHeight() {
    return destroyed ? destructionHeight : obstacleHeight; 
   }

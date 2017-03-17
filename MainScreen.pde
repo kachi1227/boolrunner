@@ -163,28 +163,28 @@ class MainScreen extends BaseGameScreen {
 
     //we should get box representing first obstacle on screen and see if projectile hits it...
     //keep track of the index with the projectile that's furtherest ahead.
-    Map<String, BaseProjectile> test = new HashMap();
+    Map<String, BaseProjectile> heightToProjectileMap = new HashMap();
     for (int i=activeProjectiles.size() - 1; i >= 0; i--) {
       BaseProjectile projectile = activeProjectiles.get(i);
       if (projectile.isOnScreen()) {
         projectile.updateForDraw();
         String projKey = projectile.getTopSideY() + "" + projectile.getHeight();
-        if (test.containsKey(projKey)) {
-          BaseProjectile mainProjectileAtHeight = test.get(projKey);
+        if (heightToProjectileMap.containsKey(projKey)) {
+          BaseProjectile mainProjectileAtHeight = heightToProjectileMap.get(projKey);
           if (projectile.getRightSideX() > mainProjectileAtHeight.getRightSideX()) {
-            test.put(projKey, projectile);
+            heightToProjectileMap.put(projKey, projectile);
           }
         } else {
-          test.put(projKey, projectile);
+          heightToProjectileMap.put(projKey, projectile);
         }
       } else {
         activeProjectiles.remove(projectile);
       }
     }
-    for (BaseProjectile projectile : test.values()) {
+    for (BaseProjectile projectile : heightToProjectileMap.values()) {
       for (Obstacle obstacle : visibleObstacles) {
         if (projectile.getBottomSideY() > obstacle.getTopSideY()) {
-          if (!obstacle.isDestroyed() && projectile.didPenetrateHitRect(obstacle.getLeftSideX(), obstacle.getTopSideY(), obstacle.getRightSideX(), groundLevel)) {
+          if (!obstacle.isDestroyed() && projectile.didPenetrateHitRect(obstacle.getLeftSideX(), obstacle.getTopSideY(), obstacle.getWidth(), obstacle.getHeight())) {
             obstacle.destroy();
             activeProjectiles.remove(projectile);
             player.incrementScoreForProjectileHit();
@@ -269,36 +269,43 @@ class MainScreen extends BaseGameScreen {
     textAlign(CENTER, TOP);
     text("x" + player.getCoinCount(), 30, groundLevel + 25 + coinGenerator.getAdjustedImageHeight(), coinGenerator.getAdjustedImageWidth() + 110, 30);
 
-    if (player.getEquippedItemKey() == BaseBobSled.KEY_FLAMETHROWER) {
-      noFill();
-      stroke(#778899);
-      strokeWeight(3);
-      rect(292, groundLevel + 15, flameGenerator.getAdjustedImageWidth() + 215, flameGenerator.getAdjustedImageHeight() + 40);
-    }
-    noStroke();
-    //Flamethrower HUD
-    flameGenerator.drawImage(300, groundLevel + 25);
-    fill(248, 120, 0);
-    textAlign(LEFT, TOP);
-    text("Flame Ammo", 300 + flameGenerator.getAdjustedImageWidth() + 10, groundLevel + 25);
-    fill(#778899);
-    textAlign(CENTER, TOP);
-    text("x" + player.getFlamethrowerAmmoCount(), 300, groundLevel + 25 + flameGenerator.getAdjustedImageHeight(), flameGenerator.getAdjustedImageWidth() + 210, 30);
+
 
     if (player.getEquippedItemKey() == BaseBobSled.KEY_JUMP_BOOST) {
       noFill();
       stroke(#778899);
       strokeWeight(3);
-      rect(642, groundLevel + 15, jumpGenerator.getAdjustedImageWidth() + 215, jumpGenerator.getAdjustedImageHeight() + 40);
+      rect(292, groundLevel + 15, jumpGenerator.getAdjustedImageWidth() + 215, jumpGenerator.getAdjustedImageHeight() + 40);
     }
     noStroke();
     //Jump Boost HUD
-    jumpGenerator.drawImage(650, groundLevel + 25);
+    jumpGenerator.drawImage(300, groundLevel + 25);
     textAlign(LEFT, TOP);
-    text("Jump Boost", 650 + jumpGenerator.getAdjustedImageWidth() + 10, groundLevel + 25);
+    text("Jump Boost", 300 + jumpGenerator.getAdjustedImageWidth() + 10, groundLevel + 25);
     fill(#778899);
     textAlign(CENTER, TOP);
-    text("x" + player.getJumpBoostCount(), 650, groundLevel + 25 + jumpGenerator.getAdjustedImageHeight(), jumpGenerator.getAdjustedImageWidth() + 210, 30);
+    text("x" + player.getJumpBoostCount(), 300, groundLevel + 25 + jumpGenerator.getAdjustedImageHeight(), jumpGenerator.getAdjustedImageWidth() + 210, 30);
+
+
+
+
+    if (player.getEquippedItemKey() == BaseBobSled.KEY_FLAMETHROWER) {
+      noFill();
+      stroke(#778899);
+      strokeWeight(3);
+      rect(642, groundLevel + 15, flameGenerator.getAdjustedImageWidth() + 215, flameGenerator.getAdjustedImageHeight() + 40);
+    }
+    noStroke();
+    //Flamethrower HUD
+    flameGenerator.drawImage(650, groundLevel + 25);
+    fill(248, 120, 0);
+    textAlign(LEFT, TOP);
+    text("Flame Ammo", 650 + flameGenerator.getAdjustedImageWidth() + 10, groundLevel + 25);
+    fill(#778899);
+    textAlign(CENTER, TOP);
+    text("x" + player.getFlamethrowerAmmoCount(), 650, groundLevel + 25 + flameGenerator.getAdjustedImageHeight(), flameGenerator.getAdjustedImageWidth() + 210, 30);
+
+
   }
 
 
@@ -315,12 +322,12 @@ class MainScreen extends BaseGameScreen {
       if ( key == ' ' && !player.isJumping()) {
         player.performJump();
       } else if (key == '1') {
-        player.setEquippedItemKey(player.getEquippedItemKey() == BaseBobSled.KEY_FLAMETHROWER ? - 1 : BaseBobSled.KEY_FLAMETHROWER);
-      } else if (key == '2') {
         player.setEquippedItemKey(player.getEquippedItemKey() == BaseBobSled.KEY_JUMP_BOOST ? -1 : BaseBobSled.KEY_JUMP_BOOST);
+      } else if (key == '2') {
+        player.setEquippedItemKey(player.getEquippedItemKey() == BaseBobSled.KEY_FLAMETHROWER ? - 1 : BaseBobSled.KEY_FLAMETHROWER);        
       } else if (keyCode == ENTER || keyCode == RETURN) {
-        if (activeProjectiles.size() < 5) {
-          player.fireProjectile();
+        if (!player.isProjectileEquipped() || activeProjectiles.size() < 5) {
+          player.useEquipped();
         }
       }
 

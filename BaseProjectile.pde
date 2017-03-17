@@ -87,7 +87,9 @@ abstract class BaseProjectile implements Moveable {
   void onPenetration() {
   }
 
-  abstract public void updateForDraw();
+  abstract void updateForDraw();
+  abstract int damageToPlayer();
+  abstract int damageToBoss();
   abstract float getLeftSideX();
   abstract float getRightSideX();
   abstract float getTopSideY();

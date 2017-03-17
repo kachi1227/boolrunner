@@ -102,7 +102,6 @@ class BossIntelligence {
     int shotMove = potentialShotMove[int(random(potentialShotMove.length))];
     List<Integer> shootActions = breakdownMultipleShots(shotMove);
     for (int i=0; i < shootActions.size(); i++) {
-      println("Shots set up");
       pendingActions.add(new PendingBossAction(millis() + (i * 150), shootActions.get(i)));
     }
     if (allowedToJump && (firstMove & BossAction.JUMP.getFlag()) == 0) {
@@ -127,10 +126,8 @@ class BossIntelligence {
         pendingActions.add(new PendingBossAction(millis() + 250, chosenAction));
       }
       if ((chosenAction & ~BossAction.JUMP.getFlag()) > 0) {
-        println("Lets get to shooting");
         List<Integer> shootActions = breakdownMultipleShots(chosenAction);
         for (int i=0; i < shootActions.size(); i++) {
-          println("Shots set up");
           pendingActions.add(new PendingBossAction(millis() + 250 + (i * 150), shootActions.get(i)));
         }
       }
