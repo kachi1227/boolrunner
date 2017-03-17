@@ -19,13 +19,13 @@ abstract class BaseEightBitImageGenerator implements BitImageGenerator {
   float getScaleFactor() {
     return scaleFactor;
   }
-  
+
   float getAdjustedImageWidth() {
-       return baseImageWidth() * getScaleFactor();
+    return baseImageWidth() * getScaleFactor();
   }
-  
+
   float getAdjustedImageHeight() {
-       return baseImageHeight() * getScaleFactor(); 
+    return baseImageHeight() * getScaleFactor();
   }
 }
 
@@ -177,10 +177,14 @@ class HeartEightBitImageGenerator extends BaseEightBitImageGenerator {
   }
 
   void drawImage(float x, float y) {
+    drawImage(x, y, #ff0120);
+  }
+
+  void drawImage(float x, float y, int fillColor) {
     float factor = getScaleFactor();
 
     noStroke();
-    fill(255, 1, 32);
+    fill(fillColor);
     rect(x + factor, y + factor, 2 * factor, 6 * factor);
     rect(x + (3 * factor), y + factor, 2 * factor, 8 * factor); 
     rect(x + (5 * factor), y + (2 * factor), 3 * factor, 9 * factor); 

@@ -8,9 +8,10 @@ class BossBattleScreen extends BaseGameScreen {
   int runnerX;
 
   BaseBobSled player;
-  List<BaseProjectile> activeProjectiles;
+  List<BaseProjectile> activePlayerProjectiles;
 
   BaseBoss boss;
+  List<BaseProjectile> activeBossProjectiles;
 
   CoinEightBitImageGenerator coinGenerator;
   FlameEightBitImageGenerator flameGenerator;
@@ -22,7 +23,8 @@ class BossBattleScreen extends BaseGameScreen {
 
   BossBattleScreen(ScreenChangeDelegate delegate) {
     super(delegate);
-    activeProjectiles = new ArrayList();
+    activePlayerProjectiles = new ArrayList();
+    activeBossProjectiles = new ArrayList();
     loadMusicFiles();
     initHUDElements();
   }
@@ -62,15 +64,20 @@ class BossBattleScreen extends BaseGameScreen {
     if (bossAmbianceAudioPlayer != null) {
       bossAmbianceAudioPlayer.pause();
     }
-    ProjectileDelegate projDelegate = new ProjectileDelegate() {
+    ProjectileDelegate playerProjDelegate = new ProjectileDelegate() {
       public void addProjectileToWorld(BaseProjectile projectile) {
         addProjectileToActiveList(projectile);
       }
     };
+    ProjectileDelegate bossProjDelegate = new ProjectileDelegate() {
+      public void addProjectileToWorld(BaseProjectile projectile) {
+        addProjectileToActiveBossList(projectile);
+      }
+    };
     WorldAwarenessDelegate intelDelegate = new WorldAwarenessDelegate() {
-      public boolean isProjectileWithinDistance(float distance) {
+      public boolean isProjectileWithinStrikingDistance(float distance) {
         boolean inDanger = false;
-        for (BaseProjectile projectile : activeProjectiles) {
+        for (BaseProjectile projectile : activePlayerProjectiles) {
           //float test = dist(projectile.getRightSideX(), projectile.getTopSideY(), boss.getLeftX(), boss.getTopY());
           //println(test);
           if (Math.abs(projectile.getRightSideX() - boss.getLeftX()) <= distance && 
@@ -82,32 +89,43 @@ class BossBattleScreen extends BaseGameScreen {
         return inDanger;
       }
 
-      public boolean areProjectilesAbove() {
-        return false;
+      public PlayerProjectileData getPlayerProjectileData() {
+        PlayerProjectileData data = new PlayerProjectileData();
+        data.totalCount = activePlayerProjectiles.size();
+        for (BaseProjectile projectile : activePlayerProjectiles) {
+          if (projectile.getBottomSideY() < boss.getTopY()) data.aboveCount++;
+          float dist = dist(projectile.getRightSideX(), projectile.getTopSideY() + projectile.getHeight()/2, boss.getLeftX(), boss.getTopY() + boss.getHeight()/2);
+          if (dist < data.closest) data.closest = dist;
+          if (dist > data.furthest) data.furthest = dist;
+        }
+        return data;
       }
-      
+
       public float getPlayerHealth() {
-       return player.getHealth(); 
+        return player.getHealth();
       }
     };
     if (playerType == PlayerType.JAMAICAN) {
-      player = new JamaicanBobSled(runnerX, groundLevel, WORLD_GRAVITY, projDelegate);
-      boss = new EnglishBoss(width - runnerX, groundLevel, WORLD_GRAVITY, intelDelegate, projDelegate);
+      player = new JamaicanBobSled(runnerX, groundLevel, WORLD_GRAVITY, playerProjDelegate);
+      boss = new EnglishBoss(width - runnerX, groundLevel, WORLD_GRAVITY, intelDelegate, bossProjDelegate);
     } else {
-      player = new AmericanBobSled(runnerX, groundLevel, WORLD_GRAVITY, projDelegate);
-      boss = new RussianBoss(width - runnerX, groundLevel, WORLD_GRAVITY, intelDelegate, projDelegate);
+      player = new AmericanBobSled(runnerX, groundLevel, WORLD_GRAVITY, playerProjDelegate);
+      boss = new RussianBoss(width - runnerX, groundLevel, WORLD_GRAVITY, intelDelegate, bossProjDelegate);
     }
     player.enableSnowthrower(true);
     bossAmbianceAudioPlayer.cue(0);
-    //bossAmbianceAudioPlayer.loop();
+    bossAmbianceAudioPlayer.loop();
   }
 
   private void addProjectileToActiveList(BaseProjectile projectile) {
-    activeProjectiles.add(projectile);
+    activePlayerProjectiles.add(projectile);
+  }
+
+  private void addProjectileToActiveBossList(BaseProjectile projectile) {
+    activeBossProjectiles.add(projectile);
   }
 
   void drawScreen() {
-    //println(frameRate);
     drawBackground();
     drawCloud();    
     drawTrees();
@@ -118,8 +136,8 @@ class BossBattleScreen extends BaseGameScreen {
     //we should get box representing first obstacle on screen and see if projectile hits it...
     //keep track of the index with the projectile that's furtherest ahead.
     Map<String, BaseProjectile> test = new HashMap();
-    for (int i=activeProjectiles.size() - 1; i >= 0; i--) {
-      BaseProjectile projectile = activeProjectiles.get(i);
+    for (int i=activePlayerProjectiles.size() - 1; i >= 0; i--) {
+      BaseProjectile projectile = activePlayerProjectiles.get(i);
       if (projectile.isOnScreen()) {
         projectile.updateForDraw();
         String projKey = projectile.getTopSideY() + "" + projectile.getHeight();
@@ -132,7 +150,24 @@ class BossBattleScreen extends BaseGameScreen {
           test.put(projKey, projectile);
         }
       } else {
-        activeProjectiles.remove(projectile);
+        activePlayerProjectiles.remove(projectile);
+      }
+    }
+    for (int i=activeBossProjectiles.size() - 1; i >= 0; i--) {
+      BaseProjectile projectile = activeBossProjectiles.get(i);
+      if (projectile.isOnScreen()) {
+        projectile.updateForDraw();
+        String projKey = projectile.getTopSideY() + "" + projectile.getHeight();
+        if (test.containsKey(projKey)) {
+          BaseProjectile mainProjectileAtHeight = test.get(projKey);
+          if (projectile.getRightSideX() > mainProjectileAtHeight.getRightSideX()) {
+            test.put(projKey, projectile);
+          }
+        } else {
+          test.put(projKey, projectile);
+        }
+      } else {
+        activeBossProjectiles.remove(projectile);
       }
     }
     for (BaseProjectile projectile : test.values()) {
@@ -189,12 +224,18 @@ class BossBattleScreen extends BaseGameScreen {
     fill(#778899);
     textSize(32);
 
+    textAlign(CENTER, TOP);
+    text("Score: " + player.getScore(), width/2, 10);
+
     textAlign(LEFT, TOP);
-    text("Score: " + player.getScore(), 10, 10);
     //health
-    text(player.getHealth(), width - 85, 10);
-    heartGenerator.drawImage(width - 120, 13);
+    text(player.getHealth(), 45, 10);
+    heartGenerator.drawImage(10, 13);
     fill(#778899);
+    //boss health
+    text(int(boss.getHealth()), width - 85, 10);
+    heartGenerator.drawImage(width - 120, 13);
+
     textSize(24);
     //Coin HUD
     coinGenerator.drawImage(30, groundLevel + 25);
@@ -251,7 +292,7 @@ class BossBattleScreen extends BaseGameScreen {
       } else if (key == '2') {
         player.setEquippedItemKey(BaseBobSled.KEY_SNOWTHROWER);
       } else if (keyCode == ENTER || keyCode == RETURN) {
-        if (activeProjectiles.size() < 5) {
+        if (activePlayerProjectiles.size() < 5) {
           player.fireProjectile();
         }
       }

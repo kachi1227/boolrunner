@@ -172,7 +172,7 @@ class MainScreen extends BaseGameScreen {
         if (test.containsKey(projKey)) {
           BaseProjectile mainProjectileAtHeight = test.get(projKey);
           if (projectile.getRightSideX() > mainProjectileAtHeight.getRightSideX()) {
-           test.put(projKey, projectile); 
+            test.put(projKey, projectile);
           }
         } else {
           test.put(projKey, projectile);
@@ -183,16 +183,16 @@ class MainScreen extends BaseGameScreen {
     }
     for (BaseProjectile projectile : test.values()) {
       for (Obstacle obstacle : visibleObstacles) {
-       if (projectile.getBottomSideY() > obstacle.getTopSideY()) {
-         if (!obstacle.isDestroyed() && projectile.didPenetrateHitRect(obstacle.getLeftSideX(), obstacle.getTopSideY(), obstacle.getRightSideX(), groundLevel)) {
+        if (projectile.getBottomSideY() > obstacle.getTopSideY()) {
+          if (!obstacle.isDestroyed() && projectile.didPenetrateHitRect(obstacle.getLeftSideX(), obstacle.getTopSideY(), obstacle.getRightSideX(), groundLevel)) {
             obstacle.destroy();
             activeProjectiles.remove(projectile);
             player.incrementScoreForProjectileHit();
-         }
-       }
+          }
+        }
       }
     }
-    
+
     totalDistanceTravelled += speed;
     drawHUD();
   }
@@ -248,16 +248,18 @@ class MainScreen extends BaseGameScreen {
     textSize(32);
 
     textAlign(CENTER, TOP);
+    text("Score: " + player.getScore(), width/2, 10);
+
+    textAlign(LEFT, TOP);
+    //health
+    text(player.getHealth(), 45, 10);
+    heartGenerator.drawImage(10, 13);
+    fill(#778899);
     int minutes = currentTime / 60;
     int seconds = currentTime % 60;
     text((Math.abs(minutes) < 10 ? ("0" + minutes) : minutes) + ":" + 
-      (Math.abs(seconds) < 10 ? ("0" + seconds) : seconds), width/2, 10);
+      (Math.abs(seconds) < 10 ? ("0" + seconds) : seconds), 10, 13 + heartGenerator.getAdjustedImageHeight() + 8);
 
-    textAlign(LEFT, TOP);
-    text("Score: " + player.getScore(), 10, 10);
-    //health
-    text(player.getHealth(), width - 85, 10);
-    heartGenerator.drawImage(width - 120, 13);
     fill(#778899);
     textSize(24);
     //Coin HUD
