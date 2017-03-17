@@ -103,7 +103,7 @@ class Obstacle extends BaseCollidable {
   }
 
   public boolean didPassPlayer(BaseBobSled player) {
-    if (state != CollidableState.COLLIDED && state != CollidableState.PASSED && getRightSideX() < player.getLeftX()) {
+    if (!destroyed && state != CollidableState.COLLIDED && state != CollidableState.PASSED && getRightSideX() < player.getLeftX()) {
       state = CollidableState.PASSED;
       return true;
     }

@@ -2,7 +2,7 @@ import java.util.Map;
 import ddf.minim.*;
 
 enum GameScreen {
-  START, CHOOSE_PLAYER, MAIN, BATTLE, REWARD, HIGH_SCORE;
+  START, CHOOSE_PLAYER, MAIN, BATTLE, HIGH_SCORE;
 }
 
 enum PlayerType {
@@ -16,7 +16,7 @@ enum CollidableState {
 interface Moveable {
  int LEFT_OF_SCREEN = 0;
  int ON_SCREEN = 1;
- int RIGHT_OF_SCREEN = 1;
+ int RIGHT_OF_SCREEN = 2;
  
  int getRelationToScreen();
  
@@ -29,7 +29,7 @@ interface ScreenChangeDelegate {
   void restart();
 }
 
-GameScreen currentScreen = GameScreen.START;
+GameScreen currentScreen = GameScreen.BATTLE;
 Map<GameScreen, BaseGameScreen> screenMap;
 
 void setup() {
@@ -48,13 +48,15 @@ void setup() {
   screenMap.put(GameScreen.CHOOSE_PLAYER, new ChoosePlayerScreen(screenDelegate));
   screenMap.put(GameScreen.MAIN, new MainScreen(screenDelegate));
   screenMap.put(GameScreen.BATTLE, new BossBattleScreen(screenDelegate));
-  screenMap.put(GameScreen.REWARD, new RewardScreen(screenDelegate));
   screenMap.put(GameScreen.HIGH_SCORE, new HighScoreScreen(screenDelegate));
 
   Map<String, Object> transitionMap = null;
   if (currentScreen == GameScreen.MAIN) {
     transitionMap = new HashMap();
     transitionMap.put(ScreenChangeDelegate.KEY_SELECTED, PlayerType.JAMAICAN);
+  } else if (currentScreen == GameScreen.BATTLE) {
+     transitionMap = new HashMap();
+     transitionMap.put(ScreenChangeDelegate.KEY_SELECTED, PlayerType.JAMAICAN);
   }
   screenMap.get(currentScreen).reset(transitionMap);
 }
@@ -75,8 +77,6 @@ private void changeGameScreenFrom(GameScreen screen, Map<String, Object> transit
     screenMap.get(currentScreen).reset(transitionMapping);
     break;
   case MAIN:
-    break;
-  case REWARD:
     break;
   case HIGH_SCORE:
     break;

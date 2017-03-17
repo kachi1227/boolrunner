@@ -3,12 +3,12 @@ interface ProjectileDelegate {
 }
 
 interface Projectilable {
- BaseProjectile convertToProjectile(float xStartPos, float yStartPos); 
+  BaseProjectile convertToProjectile(float xStartPos, float yStartPos);
 }
 
 abstract class BaseProjectile implements Moveable {
-  
-    private float offset;
+
+  private float offset;
   private float speed;
   CollidableState state;
 
@@ -16,9 +16,13 @@ abstract class BaseProjectile implements Moveable {
     this.speed = speed;
     offset = 0;
   }
-  
+
   void setSpeed(float speed) {
-   this.speed = speed; 
+    this.speed = speed;
+  }
+
+  float getSpeed() {
+    return speed;
   }
 
   void updateOffset() {
@@ -30,15 +34,16 @@ abstract class BaseProjectile implements Moveable {
   }
 
   public int getRelationToScreen() {
-    if (getLeftSideX() > width) return Moveable.RIGHT_OF_SCREEN;
-    else if (getLeftSideX() < 0 && getRightSideX() < 0) return Moveable.LEFT_OF_SCREEN;
+    if (getLeftSideX() > width) {
+      return Moveable.RIGHT_OF_SCREEN;
+    } else if (getLeftSideX() < 0 && getRightSideX() < 0) return Moveable.LEFT_OF_SCREEN;
     else return Moveable.ON_SCREEN;
   }
 
   public boolean isOnScreen() {
-   return getRelationToScreen() == Moveable.ON_SCREEN; 
+    return getRelationToScreen() == Moveable.ON_SCREEN;
   }
-  
+
   public boolean didPenetrateHitRect(float x, float y, float rectWidth, float rectHeight) {
     if (isOnScreen() && state != CollidableState.COLLIDED) {
       //Must check which is wider, the obstacle or the player. The less wide one (collider) should then be checked to see if
@@ -74,8 +79,12 @@ abstract class BaseProjectile implements Moveable {
     return false;
   }
   
+  public boolean intersectsTwoPointsOnYAxis(float topPoint, float bottomPoint) {
+     return (getBottomSideY() >= topPoint && getBottomSideY() <= bottomPoint) ||
+        (getTopSideY() >= topPoint && getTopSideY() <= bottomPoint);
+  }
+
   void onPenetration() {
-    
   }
 
   abstract public void updateForDraw();

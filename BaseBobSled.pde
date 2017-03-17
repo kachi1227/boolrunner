@@ -23,10 +23,6 @@ abstract class BaseBobSled {
   private int totalCoins;
   private int totalTimeBoostInSeconds;
 
-  //private int totalJumpBoosts;
-  //private int totalFlamethrowerAmmo;
-
-
   private Map<Integer, List<BaseCollectable>> inventory;
   private int equippedKey = -1;
 
@@ -73,12 +69,16 @@ abstract class BaseBobSled {
   public void fireProjectile() {
     if (!isProjectileEquipped()) return;
 
-    List<BaseCollectable> projectileList = inventory.get(equippedKey);
-    if (projectileList != null && !projectileList.isEmpty()) {
-      BaseCollectable collectable = projectileList.remove(projectileList.size() - 1);
-      if (collectable instanceof Projectilable) {
-        projectileDelegate.addProjectileToWorld(((Projectilable)collectable).convertToProjectile(getRightX() + 5, getTopY() + getHeight()/2));
-        collectable.onUsed();
+    if (equippedKey == BaseBobSled.KEY_SNOWTHROWER) {
+      projectileDelegate.addProjectileToWorld(new SnowballProjectile(getRightX() + 5, getTopY() + getHeight()/2, 6));
+    } else {
+      List<BaseCollectable> projectileList = inventory.get(equippedKey);
+      if (projectileList != null && !projectileList.isEmpty()) {
+        BaseCollectable collectable = projectileList.remove(projectileList.size() - 1);
+        if (collectable instanceof Projectilable) {
+          projectileDelegate.addProjectileToWorld(((Projectilable)collectable).convertToProjectile(getRightX() + 5, getTopY() + getHeight()/2));
+          collectable.onUsed();
+        }
       }
     }
   }
@@ -141,6 +141,14 @@ abstract class BaseBobSled {
     return list == null || list.isEmpty() ? 0 : (list.size() * list.get(0).getValue());
   }
 
+  void enableSnowthrower(boolean enabled) {
+    if (enabled && !inventory.containsKey(BaseBobSled.KEY_SNOWTHROWER)) {
+      inventory.put(BaseBobSled.KEY_SNOWTHROWER, new ArrayList());
+    } else if (!enabled) {
+      inventory.remove(BaseBobSled.KEY_SNOWTHROWER);
+    }
+  }
+
   void addToFlamethrowerAmmo(FlameThrowerAmmo... ammo) {
     List<BaseCollectable> list = inventory.get(BaseBobSled.KEY_FLAMETHROWER);
     if (list == null) {
@@ -191,9 +199,13 @@ abstract class BaseBobSled {
     return equippedKey;
   }
 
+  void incrementScoreForProjectileHit() {
+    score += 40;
+  }
+
   protected abstract void drawSelf();
   protected abstract float getWidth();
   protected abstract float getHeight();
   abstract void takeDamage();
-  abstract void incrementScore();
+  abstract void incrementScoreForObstaclePass();
 }

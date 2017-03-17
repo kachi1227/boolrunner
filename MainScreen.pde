@@ -31,7 +31,6 @@ class MainScreen extends BaseGameScreen {
 
   List<BaseProjectile> activeProjectiles;
 
-  Minim minim;
   AudioPlayer jamaicanAmbianceAudioPlayer;
   AudioPlayer americanAmbianceAudioPlayer;
   AudioPlayer currentAmbianceAudioPlayer;
@@ -59,7 +58,7 @@ class MainScreen extends BaseGameScreen {
   }
 
   private void loadMusicFiles() {
-    minim = new Minim(BoolRunnings.this);
+    Minim minim = new Minim(BoolRunnings.this);
     jamaicanAmbianceAudioPlayer = minim.loadFile("Temperature.mp3");
     jamaicanAmbianceAudioPlayer.setGain(-20);
     americanAmbianceAudioPlayer = minim.loadFile("PartyInTheUSA.mp3");
@@ -152,7 +151,7 @@ class MainScreen extends BaseGameScreen {
         obstacle.updateForDraw(false);
         checkForPlayerInteraction(obstacle);
         if (!obstacle.isDestroyed()) visibleObstacles.add(obstacle);
-      } else if (obstacle.onScreenAfterDistance(totalDistanceTravelled)) {
+      } else if (obstacle.onScreenAfterDistance(-totalDistanceTravelled)) {
         obstacle.setOffset(totalDistanceTravelled);
         obstacle.updateForDraw(false);
         checkForPlayerInteraction(obstacle);
@@ -188,6 +187,7 @@ class MainScreen extends BaseGameScreen {
          if (!obstacle.isDestroyed() && projectile.didPenetrateHitRect(obstacle.getLeftSideX(), obstacle.getTopSideY(), obstacle.getRightSideX(), groundLevel)) {
             obstacle.destroy();
             activeProjectiles.remove(projectile);
+            player.incrementScoreForProjectileHit();
          }
        }
       }
@@ -201,7 +201,7 @@ class MainScreen extends BaseGameScreen {
     if (obstacle.didCollide(player)) {
       player.takeDamage();
     } else if (obstacle.didPassPlayer(player)) {
-      player.incrementScore();
+      player.incrementScoreForObstaclePass();
     }
   }
 
@@ -271,7 +271,7 @@ class MainScreen extends BaseGameScreen {
       noFill();
       stroke(#778899);
       strokeWeight(3);
-      rect(295, groundLevel + 15, jumpGenerator.getAdjustedImageWidth() + 235, jumpGenerator.getAdjustedImageHeight() + 40);
+      rect(292, groundLevel + 15, flameGenerator.getAdjustedImageWidth() + 215, flameGenerator.getAdjustedImageHeight() + 40);
     }
     noStroke();
     //Flamethrower HUD
@@ -287,7 +287,7 @@ class MainScreen extends BaseGameScreen {
       noFill();
       stroke(#778899);
       strokeWeight(3);
-      rect(645, groundLevel + 15, jumpGenerator.getAdjustedImageWidth() + 220, jumpGenerator.getAdjustedImageHeight() + 40);
+      rect(642, groundLevel + 15, jumpGenerator.getAdjustedImageWidth() + 215, jumpGenerator.getAdjustedImageHeight() + 40);
     }
     noStroke();
     //Jump Boost HUD
@@ -311,14 +311,11 @@ class MainScreen extends BaseGameScreen {
       //if space is pressed, perform jump.
       //if enter is used to start game, have that occur here (could also occur in mousePressed)
       if ( key == ' ' && !player.isJumping()) {
-        println("day");
         player.performJump();
       } else if (key == '1') {
-        println("day2");
-        player.setEquippedItemKey(player.getEquippedItemKey() == BaseBobSled.KEY_JUMP_BOOST ? -1 : BaseBobSled.KEY_JUMP_BOOST);
-      } else if (key == '2') {
-        println("day3");
         player.setEquippedItemKey(player.getEquippedItemKey() == BaseBobSled.KEY_FLAMETHROWER ? - 1 : BaseBobSled.KEY_FLAMETHROWER);
+      } else if (key == '2') {
+        player.setEquippedItemKey(player.getEquippedItemKey() == BaseBobSled.KEY_JUMP_BOOST ? -1 : BaseBobSled.KEY_JUMP_BOOST);
       } else if (keyCode == ENTER || keyCode == RETURN) {
         if (activeProjectiles.size() < 5) {
           player.fireProjectile();

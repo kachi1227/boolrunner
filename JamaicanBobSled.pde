@@ -102,7 +102,7 @@ class JamaicanBobSled extends BaseBobSled {
     health -= 20;
   }
   
-  void incrementScore() {
+  void incrementScoreForObstaclePass() {
    score += 100; 
   }
 }

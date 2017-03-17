@@ -7,7 +7,6 @@ class FireballProjectile extends BaseProjectile {
     super(speed);
     startPosX = posX;
     startPosY = ground;
-    println(startPosY);
   }
 
   void updateForDraw() {
