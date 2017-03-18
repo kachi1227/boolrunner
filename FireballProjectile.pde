@@ -29,6 +29,10 @@ class FireballProjectile extends BaseProjectile {
   int damageToBoss() {
     return 2;
   }
+  
+  int pointsPerBossHit() {
+   return  50;
+  }
 
   float getLeftSideX() {
     return startPosX + getOffset();

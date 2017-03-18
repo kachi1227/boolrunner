@@ -363,3 +363,254 @@ class HourGlassEightBitImageGenerator extends BaseEightBitImageGenerator {
     return 23;
   }
 }
+
+class SnowballEightBitImageGenerator extends BaseEightBitImageGenerator {
+
+  SnowballEightBitImageGenerator(float scaleFactor) {
+    super(scaleFactor);
+  }
+
+  void drawImage(float x, float y) {
+    float factor = getScaleFactor();
+    //34x34
+    noStroke();
+    fill(#F7F7F7);
+    rect(x + (2 * factor), y + factor, 13 * factor, 15 * factor); 
+    fill(#6CA6CD);
+    rect(x + (13 * factor), y + factor, factor, factor); 
+    rect(x + (14 * factor), y + (2 * factor), factor, factor); 
+    rect(x + (15 * factor), y + (3 * factor), factor, 11 * factor); 
+    rect(x + (14 * factor), y + (14 * factor), factor, factor); 
+    rect(x + (13 * factor), y + (15 * factor), factor, factor);
+    fill(#87CEEB);  
+    rect(x + (3 * factor), y + factor, factor, factor);
+    rect(x + (2 * factor), y + (2 * factor), factor, factor);
+    rect(x + factor, y + (3 * factor), factor, 11 * factor);
+    rect(x + (2 * factor), y + (14 * factor), factor, factor); 
+    rect(x + (3 * factor), y + (15 * factor), factor, factor);
+    fill(#C6E2FF);
+    rect(x, y + (3 * factor), factor, 11 * factor); 
+    rect(x + factor, y + (2 * factor), factor, factor);
+    rect(x + (2 * factor), y + factor, factor, factor);
+    rect(x + (3 * factor), y, 11 * factor, factor);
+    rect(x + (14 * factor), y + factor, factor, factor);
+    rect(x + (15 * factor), y + (2 * factor), factor, factor);
+    rect(x + (16 * factor), y + (3 * factor), factor, 11 * factor);
+    rect(x + (15 * factor), y + (14 * factor), factor, factor);   
+    rect(x + (14 * factor), y + (15 * factor), factor, factor);
+    rect(x + (3 * factor), y + (16 * factor), 11 * factor, factor);
+    rect(x + (2 * factor), y + (15 * factor), factor, factor);       
+    rect(x + factor, y + (14 * factor), factor, factor);
+  }
+
+  float baseImageWidth() {
+    return 17;
+  }
+
+  float baseImageHeight() {
+    return 17;
+  }
+}
+
+class IceEightBitImageGenerator extends BaseEightBitImageGenerator {
+
+  IceEightBitImageGenerator(float scaleFactor) {
+    super(scaleFactor);
+  }
+
+  void drawImage(float x, float y) {
+    float factor = getScaleFactor();
+    noStroke();
+    fill(#778899);
+    rect(x + (6 * factor), y, 4 * factor, factor);
+    rect(x + (4 * factor), y + factor, 2 * factor, factor);
+    rect(x + (10 * factor), y + factor, 2 * factor, factor);
+
+    rect(x + (2 * factor), y + (2 * factor), 2 * factor, factor);
+    rect(x + (12 * factor), y + (2 * factor), 2 * factor, factor);
+
+    rect(x, y + (3 * factor), 2 * factor, factor);
+    rect(x + (14 * factor), y + (3 * factor), 2 * factor, factor);
+    rect(x + (2 * factor), y + (4 * factor), 2 * factor, factor);    
+    rect(x + (12 * factor), y + (4 * factor), 2 * factor, factor);
+    rect(x + (4 * factor), y + (5 * factor), 2 * factor, factor);
+    rect(x + (10 * factor), y + (5 * factor), 2 * factor, factor);
+    rect(x + (6 * factor), y + (6 * factor), 4 * factor, factor);
+
+    rect(x, y + (3 * factor), factor, 9 * factor);
+    rect(x + (15 * factor), y + (3 * factor), factor, 9 * factor);
+
+    rect(x, y + (12 * factor), 2 * factor, factor);
+    rect(x + (14 * factor), y + (12 * factor), 2 * factor, factor);
+    rect(x + (2 * factor), y + (13 * factor), 2 * factor, factor);    
+    rect(x + (12 * factor), y + (13 * factor), 2 * factor, factor);
+    rect(x + (4 * factor), y + (14 * factor), 2 * factor, factor);
+    rect(x + (10 * factor), y + (14 * factor), 2 * factor, factor);
+    rect(x + (6 * factor), y + (15 * factor), 4 * factor, factor);
+
+    rect(x + (8 * factor), y + (6 * factor), factor, 9 * factor);
+
+
+    fill(149, 204, 245);
+    rect(x + (6 * factor), y + factor, 4 * factor, 5 * factor);
+    rect(x + (4 * factor), y + (2 * factor), 8 * factor, 3 * factor);
+    rect(x + (2 * factor), y + (3 * factor), 12 * factor, factor);
+
+    rect(x + factor, y + (4 * factor), factor, 8 * factor);
+    rect(x + (2 * factor), y + (5 * factor), 2 * factor, 8 * factor);
+    rect(x + (4 * factor), y + (6 * factor), 2 * factor, 8 * factor);
+    rect(x + (6 * factor), y + (7 * factor), 2 * factor, 8 * factor);
+
+    rect(x + (9 * factor), y + (7 * factor), factor, 8 * factor);
+    rect(x + (10 * factor), y + (6 * factor), 2 * factor, 8 * factor);
+    rect(x + (12 * factor), y + (5 * factor), 2 * factor, 8 * factor);
+    rect(x + (14 * factor), y + (4 * factor), factor, 8 * factor);
+
+    fill(255);
+    rect(x + (14 * factor), y + (4 * factor), factor, factor);
+    rect(x + (13 * factor), y + (5 * factor), factor, factor);
+    rect(x + (12 * factor), y + (6 * factor), factor, factor);
+
+    rect(x + (4 * factor), y + (7 * factor), factor, factor);
+    rect(x + (3 * factor), y + (8 * factor), factor, factor);
+    rect(x + (2 * factor), y + (9 * factor), factor, factor);
+
+    rect(x + (7 * factor), y + (10 * factor), factor, factor);
+    rect(x + (6 * factor), y + (11 * factor), factor, factor);
+    rect(x + (5 * factor), y + (12 * factor), factor, factor);
+
+    rect(x + (12 * factor), y + (9 * factor), factor, factor);
+    rect(x + (11 * factor), y + (10 * factor), factor, factor);
+    rect(x + (10 * factor), y + (11 * factor), factor, factor);
+  }
+
+  float baseImageWidth() {
+    return 16;
+  }
+
+  float baseImageHeight() {
+    return 16;
+  }
+}
+
+class ShieldEightBitImageGenerator extends BaseEightBitImageGenerator {
+
+  ShieldEightBitImageGenerator(float scaleFactor) {
+    super(scaleFactor);
+  }
+
+
+  void drawImage(float x, float y) {
+    float factor = getScaleFactor();
+        noStroke();
+    fill(185, 192, 197);
+    rect(x + (3 * factor), y + factor, 11 * factor, 18 * factor);
+
+    rect(x + (5 * factor), y + (19 * factor), 7 * factor, factor);
+    rect(x + (6 * factor), y + (20 * factor), 5 * factor, factor);
+    rect(x + (7 * factor), y + (21 * factor), 3 * factor, factor);
+
+    rect(x + (2 * factor), y + factor, factor, 13 * factor);
+    rect(x + (14 * factor), y + factor, factor, 13 * factor);
+    rect(x + factor, y + (2 * factor), factor, 9 * factor);
+    rect(x + (15 * factor), y + (2 * factor), factor, 9 * factor);
+
+    fill(#ff0000);
+    rect(x + (7 * factor), y + (3 * factor), 3 * factor, 12 * factor);
+
+    rect(x + (4 * factor), y + (6 * factor), 9 * factor, 3 * factor);
+
+    fill(#778899);
+    rect(x + factor, y, 15 * factor, factor);
+    rect(x, y + factor, 2 * factor, factor);
+    rect(x + (15 * factor), y + factor, 2 * factor, factor);
+
+    rect(x, y + factor, factor, 11 * factor);
+    rect(x + (16 * factor), y + factor, factor, 11 * factor);
+
+    rect(x + factor, y + (11 * factor), factor, 4 * factor); 
+    rect(x + (15 * factor), y + (11 * factor), factor, 4 * factor);
+
+    rect(x + (2 * factor), y + (14 * factor), factor, 3 * factor);
+    rect(x + (14 * factor), y + (14 * factor), factor, 3 * factor);
+
+    rect(x + (3 * factor), y + (17 * factor), factor, 2 * factor);
+    rect(x + (13 * factor), y + (17 * factor), factor, 2 * factor);
+
+    rect(x + (4 * factor), y + (18 * factor), factor, 3 * factor);
+    rect(x + (12 * factor), y + (18 * factor), factor, 3 * factor);
+
+    rect(x + (5 * factor), y + (20 * factor), factor, 2 * factor);
+    rect(x + (11 * factor), y + (20 * factor), factor, 2 * factor);
+
+    rect(x + (6 * factor), y + (21 * factor), factor, factor);
+    rect(x + (10 * factor), y + (21 * factor), factor, factor);
+
+    rect(x + (7 * factor), y + (22 * factor), 3 * factor, factor);
+  }
+
+  float baseImageWidth() {
+    return 17;
+  }
+
+  float baseImageHeight() {
+    return 23;
+  }
+}
+
+class ClockEightBitImageGenerator extends BaseEightBitImageGenerator {
+  
+  ClockEightBitImageGenerator(float scaleFactor) {
+    super(scaleFactor);
+  }
+  
+  void drawImage(float x, float y) {
+   float f = getScaleFactor();
+       noStroke();
+   fill(158, 10, 10);
+   rect(x + (10 * f), y + f, 5 * f, 2 * f);
+   rect(x + (10 * f), y + (21 * f), 5 * f, 2 * f);
+   
+   rect(x + (7 * f), y + (2 * f), 3 * f, 2 * f);
+   rect(x + (7 * f), y + (20 * f), 3 * f, 2 * f);
+  
+     rect(x + (15 * f), y + (2 * f), 3 * f, 2 * f);
+   rect(x + (15 * f), y + (20 * f), 3 * f, 2 * f);
+   
+      rect(x + (5 * f), y + (3 * f), 2 * f, 2 * f);
+   rect(x + (5 * f), y + (19 * f), 2 * f, 2 * f);
+   
+         rect(x + (18 * f), y + (3 * f), 2 * f, 2 * f);
+   rect(x + (18 * f), y + (19 * f), 2 * f, 2 * f);
+
+}
+  
+  float baseImageWidth() {
+   return 25; 
+  }
+  
+  float baseImageHeight() {
+    return 25;
+  }
+}
+
+class MedalEightBitImageGenerator extends BaseEightBitImageGenerator {
+  
+  void drawImage(float x, float y) {
+   fill(255, 255, 0);
+   ellipse(x + baseImageWidth()/2, y + baseImageHeight()/2, baseImageWidth(), baseImageHeight());
+  }
+ 
+  MedalEightBitImageGenerator(float scaleFactor) {
+   super(scaleFactor); 
+  }
+  
+  float baseImageWidth() {
+   return 15;
+  }
+  
+  float baseImageHeight() {
+   return 23; 
+  }
+  
+}

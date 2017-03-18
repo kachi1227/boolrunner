@@ -69,6 +69,10 @@ abstract class BaseGameScreen {
   boolean handleMouseClicked() {
     return false;
   }
+  
+  boolean handleMouseMoved() {
+   return false; 
+  }
 
 
   PFont getTitleFont() {

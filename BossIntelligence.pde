@@ -93,7 +93,7 @@ class BossIntelligence {
     int potentialShotMove[] = {BossAction.SHOOT_FIVE.getFlag(), BossAction.SHOOT_THREE.getFlag(), BossAction.SHOOT_FIVE.getFlag(), 
       (worldDelegate.getPlayerHealth() < 40 ? BossAction.SHOOT_FIVE.getFlag() : BossAction.SHOOT_SIX.getFlag()), 
       BossAction.SHOOT.getFlag(), BossAction.SHOOT_SIX.getFlag(), BossAction.SHOOT_THREE.getFlag()};
-      
+
     PlayerProjectileData data = worldDelegate.getPlayerProjectileData();
     //if we've randomly decided to jump, only do so if there is nothing above us OR if there are more things aimed at us than are above us
     boolean allowedToJump = (data.aboveCount == 0 || data.aboveCount < data.totalCount - data.aboveCount);
@@ -153,5 +153,9 @@ class BossIntelligence {
       }
     }
     return totalSingleShots;
+  }
+  
+  void shutdown() {
+    pendingActions.clear();
   }
 }

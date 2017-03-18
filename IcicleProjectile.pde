@@ -1,5 +1,5 @@
 class IcicleProjectile extends BaseProjectile {
- 
+
   private float startPosX;
   private float startPosY;
 
@@ -13,23 +13,30 @@ class IcicleProjectile extends BaseProjectile {
     drawIcicle();
     updateOffset();
   }
-  
+
   private void drawIcicle() {
     noStroke();
-    fill(248, 120, 0);
-    
-    triangle(getLeftSideX() + getHeight()/4, getTopSideY(), getRightSideX(), getTopSideY() + getHeight()/2,
-             getLeftSideX() + getHeight()/4, getBottomSideY());
-    fill(248, 192, 0);
-    ellipse(getLeftSideX() + getHeight()/4, getTopSideY() + getHeight()/2, getHeight()/2, getHeight());
+    stroke(#87CEEB);
+    fill(0xA0F0FFFF);
 
-}
+    float xStart = getSpeed() < 0 ? getRightSideX() : getLeftSideX();
+    float xEnd = getSpeed() < 0 ? getLeftSideX() : getRightSideX();
+    int sign = getSpeed() < 0 ? 1 : -1;
+    triangle(xStart - (sign * getHeight()/4), getTopSideY(), xEnd, getTopSideY() + getHeight()/2, 
+      xStart - (sign * getHeight()/4), getBottomSideY());
+    fill(#6CA6CD);
+    ellipse(xStart - (sign * getHeight()/4), getTopSideY() + getHeight()/2, getHeight()/2, getHeight());
+  }
 
   int damageToPlayer() {
-   return 4; 
+    return 3;
   }
   int damageToBoss() {
-    return 2;
+    return 4;
+  }
+  
+    int pointsPerBossHit() {
+   return  40;
   }
 
   float getLeftSideX() {
@@ -49,12 +56,10 @@ class IcicleProjectile extends BaseProjectile {
   }
 
   float getWidth() {
-    return 48;
+    return 60;
   }
 
   float getHeight() {
-    return 24;
+    return 20;
   }
-  
-  
 }

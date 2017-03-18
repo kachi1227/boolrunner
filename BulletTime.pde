@@ -1,36 +1,35 @@
-class Icicle extends BaseCollectable implements Projectilable {
+class BulletTime extends BaseCollectable {
 
   private float startPosX;
   private float groundPosY;
   private float distanceFromGround;
 
-  private FlameEightBitImageGenerator imageGenerator;
+  private HourGlassEightBitImageGenerator imageGenerator;
 
   AudioPlayer collectionSoundPlayer;
 
-  public Icicle(float posX, float ground, float distanceFromGround, float speed) {
+  public BulletTime(float posX, float ground, float distanceFromGround, float speed) {
     super(speed);
     startPosX = posX;
     groundPosY = ground;
     this.distanceFromGround = distanceFromGround;
-    imageGenerator = new FlameEightBitImageGenerator(2);
-
+    imageGenerator = new HourGlassEightBitImageGenerator(2.5);
     Minim minim = new Minim(BoolRunnings.this);
-    collectionSoundPlayer = minim.loadFile("collide_flame.mp3");
+    collectionSoundPlayer = minim.loadFile("collide_time.mp3");
     collectionSoundPlayer.setGain(-15);
   }
 
 
   public void updateForDraw() {
-    if (isOnScreen() && !isCollected()) drawFlame();
+    if (isOnScreen() && !isCollected()) drawCoin();
     updateOffset();
   }
 
-  private void drawFlame() {
-    float flameLeft = startPosX - getOffset();
-    float flameTop = groundPosY - distanceFromGround;
-    imageGenerator.drawImage(flameLeft, flameTop);
-    //48x32
+  private void drawCoin() {
+    float coinLeft = startPosX - getOffset();
+    float coinTop = groundPosY - distanceFromGround;
+    imageGenerator.drawImage(coinLeft, coinTop);
+    ////34x34
   }
 
   public float getLeftSideX() {
@@ -59,14 +58,9 @@ class Icicle extends BaseCollectable implements Projectilable {
 
   void onCollided(BaseBobSled player) {
     collectionSoundPlayer.play();
-    player.addToIcicles(this);
   }
 
-  public int getValue() {
-    return 2;
-  }
-  
-  public BaseProjectile convertToProjectile(float xStartPos, float yStartPos) {
-    return new IcicleProjectile(xStartPos, yStartPos, 10.5);
+  int getValue() {
+    return 5000; //last for 5 seconds...
   }
 }

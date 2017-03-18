@@ -1,6 +1,6 @@
-abstract class BaseBoss {
+abstract class BaseBoss implements Moveable {
 
-  final int STANDARD_JUMP_VELOCITY = 25;
+  final int STANDARD_JUMP_VELOCITY = 25; //4 - bullet time value
 
   private float sledRight;
   private float groundLevel;
@@ -8,19 +8,24 @@ abstract class BaseBoss {
   private boolean performingJump;
   private float jumpVel;
   private float gravity;
+  
+  private float speed;
 
   protected int score;
   protected float health;
 
+  private boolean defeated;
 
   private BossIntelligence intelligence;
   private ProjectileDelegate projectileDelegate;
 
-  BaseBoss(float xRight, float ground, float gravity, WorldAwarenessDelegate intelDelegate, ProjectileDelegate projDelegate) {
+  BaseBoss(float xRight, float ground, float gravity, float speed, WorldAwarenessDelegate intelDelegate, ProjectileDelegate projDelegate) {
     sledRight = xRight;
     groundLevel = ground;
     sledBottom = groundLevel;
     this.gravity = gravity;
+    this.speed = speed;
+    //this.gravity = gravity/25; bullet time value
     configureIntelligence(intelDelegate);
     projectileDelegate = projDelegate;
     reset();
@@ -41,6 +46,7 @@ abstract class BaseBoss {
 
   void reset() {
     health = 100;
+    defeated = false;
   }
 
   public void performJump() {
@@ -108,6 +114,25 @@ abstract class BaseBoss {
 
   public void updateSledRight(float newSledRight) {
     sledRight = newSledRight;
+  }
+  
+  public float getSpeed() {
+   return speed; 
+  }
+  
+  public void markAsDefeated() {
+    defeated = true;
+    intelligence.shutdown();
+  }
+  
+  public boolean isDefeated() {
+   return defeated; 
+  }
+  
+  public int getRelationToScreen() {
+    if (getLeftX() > width) return Moveable.RIGHT_OF_SCREEN;
+    else if (getLeftX() < 0 && getRightX() < 0) return Moveable.LEFT_OF_SCREEN;
+    else return Moveable.ON_SCREEN;
   }
 
   protected abstract void drawSelf();

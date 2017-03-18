@@ -1,10 +1,13 @@
 class EnglishBoss extends BaseBoss {
 
-  EnglishBoss(float x, float ground, float gravity, WorldAwarenessDelegate intelDelegate, ProjectileDelegate projDelegate) {
-    super(x, ground, gravity, intelDelegate, projDelegate);
+  EnglishBoss(float x, float ground, float gravity, float speed, WorldAwarenessDelegate intelDelegate, ProjectileDelegate projDelegate) {
+    super(x, ground, gravity, speed, intelDelegate, projDelegate);
   }
 
   protected void drawSelf() {
+    if (getRelationToScreen() == Moveable.LEFT_OF_SCREEN) return;
+    else if (isDefeated()) updateSledRight(getRightX() - getSpeed());
+    
     float x = getLeftX();
     float sledBottom = getBottomY();
     float sledTop = sledBottom - 40;

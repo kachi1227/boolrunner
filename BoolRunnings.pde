@@ -2,7 +2,7 @@ import java.util.Map;
 import ddf.minim.*;
 
 enum GameScreen {
-  START, CHOOSE_PLAYER, MAIN, BATTLE, HIGH_SCORE;
+  START, CHOOSE_PLAYER, MAIN, INVENTORY, BATTLE, HIGH_SCORE;
 }
 
 enum PlayerType {
@@ -10,26 +10,29 @@ enum PlayerType {
 }
 
 enum CollidableState {
- COLLIDED, PASSED; 
+  COLLIDED, PASSED;
 }
 
 interface Moveable {
- int LEFT_OF_SCREEN = 0;
- int ON_SCREEN = 1;
- int RIGHT_OF_SCREEN = 2;
- 
- int getRelationToScreen();
- 
+  int LEFT_OF_SCREEN = 0;
+  int ON_SCREEN = 1;
+  int RIGHT_OF_SCREEN = 2;
+
+  int getRelationToScreen();
 }
 
 interface ScreenChangeDelegate {
-  String KEY_SCORE = "score";
   String KEY_SELECTED = "selected_player";
+  String KEY_SCORE = "score";
+  String KEY_TIME_REMAINING = "time_remaining";
+  String KEY_HEALTH = "health";
+  String KEY_COINS = "coins";
+  String KEY_INVENTORY = "inventory";
   void performScreenChange(Map<String, Object> transitionDict);
   void restart();
 }
 
-GameScreen currentScreen = GameScreen.BATTLE;
+GameScreen currentScreen = GameScreen.INVENTORY;
 Map<GameScreen, BaseGameScreen> screenMap;
 
 void setup() {
@@ -47,6 +50,7 @@ void setup() {
   screenMap.put(GameScreen.START, new StartGameScreen(screenDelegate));
   screenMap.put(GameScreen.CHOOSE_PLAYER, new ChoosePlayerScreen(screenDelegate));
   screenMap.put(GameScreen.MAIN, new MainScreen(screenDelegate));
+  screenMap.put(GameScreen.INVENTORY, new InventorySelectionScreen(screenDelegate));
   screenMap.put(GameScreen.BATTLE, new BossBattleScreen(screenDelegate));
   screenMap.put(GameScreen.HIGH_SCORE, new HighScoreScreen(screenDelegate));
 
@@ -54,9 +58,13 @@ void setup() {
   if (currentScreen == GameScreen.MAIN) {
     transitionMap = new HashMap();
     transitionMap.put(ScreenChangeDelegate.KEY_SELECTED, PlayerType.JAMAICAN);
-  } else if (currentScreen == GameScreen.BATTLE) {
-     transitionMap = new HashMap();
-     transitionMap.put(ScreenChangeDelegate.KEY_SELECTED, PlayerType.JAMAICAN);
+  } else if (currentScreen == GameScreen.INVENTORY) {
+    transitionMap = new HashMap();
+    transitionMap.put(ScreenChangeDelegate.KEY_SELECTED, PlayerType.JAMAICAN);
+    transitionMap.put(ScreenChangeDelegate.KEY_SCORE, 1650);
+    transitionMap.put(ScreenChangeDelegate.KEY_TIME_REMAINING, 60000);
+    transitionMap.put(ScreenChangeDelegate.KEY_HEALTH, 55);
+    transitionMap.put(ScreenChangeDelegate.KEY_COINS, 300);
   }
   screenMap.get(currentScreen).reset(transitionMap);
 }
@@ -78,6 +86,12 @@ private void changeGameScreenFrom(GameScreen screen, Map<String, Object> transit
     break;
   case MAIN:
     break;
+  case INVENTORY:
+    currentScreen = GameScreen.BATTLE;
+    screenMap.get(currentScreen).reset(transitionMapping);
+    break;
+  case BATTLE:
+    break;
   case HIGH_SCORE:
     break;
   }
@@ -97,4 +111,8 @@ void keyPressed() {
 
 void mouseClicked() {
   screenMap.get(currentScreen).handleMouseClicked();
+}
+
+void mouseMoved() {
+ screenMap.get(currentScreen).handleMouseMoved(); 
 }

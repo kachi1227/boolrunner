@@ -67,7 +67,7 @@ class MainScreen extends BaseGameScreen {
 
   private void initHUDElements() {
     hudFont = createFont("slkscre.ttf", 24);
-    coinGenerator = new CoinEightBitImageGenerator(1.5);
+    coinGenerator = new CoinEightBitImageGenerator(2);
     flameGenerator = new FlameEightBitImageGenerator(1.5);
     heartGenerator = new HeartEightBitImageGenerator(2);
     jumpGenerator = new JumpArrowEightBitImageGenerator(1);
@@ -187,7 +187,7 @@ class MainScreen extends BaseGameScreen {
           if (!obstacle.isDestroyed() && projectile.didPenetrateHitRect(obstacle.getLeftSideX(), obstacle.getTopSideY(), obstacle.getWidth(), obstacle.getHeight())) {
             obstacle.destroy();
             activeProjectiles.remove(projectile);
-            player.incrementScoreForProjectileHit();
+            player.incrementScoreForProjectileHit(projectile);
           }
         }
       }
@@ -255,36 +255,36 @@ class MainScreen extends BaseGameScreen {
     text(player.getHealth(), 45, 10);
     heartGenerator.drawImage(10, 13);
     fill(#778899);
+    //time
     int minutes = currentTime / 60;
     int seconds = currentTime % 60;
     text((Math.abs(minutes) < 10 ? ("0" + minutes) : minutes) + ":" + 
       (Math.abs(seconds) < 10 ? ("0" + seconds) : seconds), 10, 13 + heartGenerator.getAdjustedImageHeight() + 8);
 
+    textAlign(LEFT, TOP);
+    fill(#778899);
+    textSize(28);
+    //coins
+    text("x" + player.getCoinCount(), width - 110, 11);
+    coinGenerator.drawImage(width - 150, 8);
+
     fill(#778899);
     textSize(24);
-    //Coin HUD
-    coinGenerator.drawImage(30, groundLevel + 25);
-    text("Coins", 30 + coinGenerator.getAdjustedImageWidth() + 10, groundLevel + 25);
-    fill(#778899);
-    textAlign(CENTER, TOP);
-    text("x" + player.getCoinCount(), 30, groundLevel + 25 + coinGenerator.getAdjustedImageHeight(), coinGenerator.getAdjustedImageWidth() + 110, 30);
-
-
-
+   
     if (player.getEquippedItemKey() == BaseBobSled.KEY_JUMP_BOOST) {
       noFill();
       stroke(#778899);
       strokeWeight(3);
-      rect(292, groundLevel + 15, jumpGenerator.getAdjustedImageWidth() + 215, jumpGenerator.getAdjustedImageHeight() + 40);
+      rect(22, groundLevel + 15, jumpGenerator.getAdjustedImageWidth() + 215, jumpGenerator.getAdjustedImageHeight() + 40);
     }
     noStroke();
     //Jump Boost HUD
-    jumpGenerator.drawImage(300, groundLevel + 25);
+    jumpGenerator.drawImage(30, groundLevel + 25);
     textAlign(LEFT, TOP);
-    text("Jump Boost", 300 + jumpGenerator.getAdjustedImageWidth() + 10, groundLevel + 25);
+    text("Jump Boost", 30 + jumpGenerator.getAdjustedImageWidth() + 10, groundLevel + 25);
     fill(#778899);
     textAlign(CENTER, TOP);
-    text("x" + player.getJumpBoostCount(), 300, groundLevel + 25 + jumpGenerator.getAdjustedImageHeight(), jumpGenerator.getAdjustedImageWidth() + 210, 30);
+    text("x" + player.getJumpBoostCount(), 30, groundLevel + 25 + jumpGenerator.getAdjustedImageHeight(), jumpGenerator.getAdjustedImageWidth() + 210, 30);
 
 
 
@@ -293,17 +293,17 @@ class MainScreen extends BaseGameScreen {
       noFill();
       stroke(#778899);
       strokeWeight(3);
-      rect(642, groundLevel + 15, flameGenerator.getAdjustedImageWidth() + 215, flameGenerator.getAdjustedImageHeight() + 40);
+      rect(292, groundLevel + 15, flameGenerator.getAdjustedImageWidth() + 215, flameGenerator.getAdjustedImageHeight() + 40);
     }
     noStroke();
     //Flamethrower HUD
-    flameGenerator.drawImage(650, groundLevel + 25);
+    flameGenerator.drawImage(300, groundLevel + 25);
     fill(248, 120, 0);
     textAlign(LEFT, TOP);
-    text("Flame Ammo", 650 + flameGenerator.getAdjustedImageWidth() + 10, groundLevel + 25);
+    text("Flame Ammo", 300 + flameGenerator.getAdjustedImageWidth() + 10, groundLevel + 25);
     fill(#778899);
     textAlign(CENTER, TOP);
-    text("x" + player.getFlamethrowerAmmoCount(), 650, groundLevel + 25 + flameGenerator.getAdjustedImageHeight(), flameGenerator.getAdjustedImageWidth() + 210, 30);
+    text("x" + player.getFlamethrowerAmmoCount(), 300, groundLevel + 25 + flameGenerator.getAdjustedImageHeight(), flameGenerator.getAdjustedImageWidth() + 210, 30);
 
 
   }

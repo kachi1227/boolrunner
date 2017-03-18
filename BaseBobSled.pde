@@ -41,7 +41,7 @@ abstract class BaseBobSled {
   void reset() {
     score = 0;
     health = 100;
-    inventory.clear();
+    for (Integer inventoryKey : inventory.keySet()) inventory.put(inventoryKey, new ArrayList());
     equippedKey = -1;
   }
   
@@ -86,6 +86,7 @@ abstract class BaseBobSled {
           projectileDelegate.addProjectileToWorld(((Projectilable)collectable).convertToProjectile(getRightX() + 5, getTopY() + getHeight()/2));
           collectable.onUsed();
         }
+        if (projectileList.isEmpty() && inventory.containsKey(BaseBobSled.KEY_SNOWTHROWER)) equippedKey = BaseBobSled.KEY_SNOWTHROWER;
       }
     }
   }
@@ -224,8 +225,8 @@ abstract class BaseBobSled {
     return equippedKey;
   }
 
-  void incrementScoreForProjectileHit() {
-    score += 40;
+  void incrementScoreForProjectileHit(BaseProjectile projectile) {
+    score += projectile.pointsPerBossHit();
   }
 
   public void takeDamageFromProjectileHit(BaseProjectile projectile) {

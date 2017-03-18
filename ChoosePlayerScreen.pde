@@ -58,7 +58,7 @@ class ChoosePlayerScreen extends BaseGameScreen {
     stroke(255);
     strokeWeight(5);
     fill(mousePressed && mouseInsideAmerica() ? #cccccc : 0x90ffffff);
-    rect(AMERICA_AREA_LEFT, AMERICA_AREA_TOP, 150, 150, 7);
+    rect(AMERICA_AREA_LEFT, AMERICA_AREA_TOP, SELECT_AREA_WIDTH, SELECT_AREA_WIDTH, 7);
     noStroke();
     fill(178, 34, 52);
     rect(flagLeft, flagTop, 125, 80);

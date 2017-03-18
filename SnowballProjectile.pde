@@ -39,6 +39,10 @@ class SnowballProjectile extends BaseProjectile {
   float getLeftSideX() {
     return startPosX + getOffset();
   }
+  
+    int pointsPerBossHit() {
+   return  60;
+  }
 
   float getRightSideX() {
     return startPosX + getWidth() + getOffset();

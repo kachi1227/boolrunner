@@ -1,7 +1,7 @@
 class RussianBoss extends BaseBoss {
 
-  RussianBoss(float x, float ground, float gravity, WorldAwarenessDelegate intelDelegate, ProjectileDelegate projDelegate) {
-    super(x, ground, gravity, intelDelegate, projDelegate);
+  RussianBoss(float x, float ground, float gravity, float speed, WorldAwarenessDelegate intelDelegate, ProjectileDelegate projDelegate) {
+    super(x, ground, gravity, speed, intelDelegate, projDelegate);
   }
 
   protected void drawSelf() {
