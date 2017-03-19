@@ -4,29 +4,22 @@ class Icicle extends BaseCollectable implements Projectilable {
   private float groundPosY;
   private float distanceFromGround;
 
-  private FlameEightBitImageGenerator imageGenerator;
-
-  AudioPlayer collectionSoundPlayer;
+  private IceEightBitImageGenerator imageGenerator;
 
   public Icicle(float posX, float ground, float distanceFromGround, float speed) {
     super(speed);
     startPosX = posX;
     groundPosY = ground;
     this.distanceFromGround = distanceFromGround;
-    imageGenerator = new FlameEightBitImageGenerator(2);
-
-    Minim minim = new Minim(BoolRunnings.this);
-    collectionSoundPlayer = minim.loadFile("collide_flame.mp3");
-    collectionSoundPlayer.setGain(-15);
+    imageGenerator = new IceEightBitImageGenerator(2);
   }
 
-
   public void updateForDraw() {
-    if (isOnScreen() && !isCollected()) drawFlame();
+    if (isOnScreen() && !isCollected()) drawIceCube();
     updateOffset();
   }
 
-  private void drawFlame() {
+  private void drawIceCube() {
     float flameLeft = startPosX - getOffset();
     float flameTop = groundPosY - distanceFromGround;
     imageGenerator.drawImage(flameLeft, flameTop);
@@ -58,7 +51,6 @@ class Icicle extends BaseCollectable implements Projectilable {
   }
 
   void onCollided(BaseBobSled player) {
-    collectionSoundPlayer.play();
     player.addToIcicles(this);
   }
 

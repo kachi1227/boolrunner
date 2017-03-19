@@ -15,14 +15,18 @@ class MainScreen extends BaseGameScreen {
   float totalDistanceTravelled;
 
   BaseBobSled player;
+  float distanceRequiredToTravel;
   int obstacleStartIndex = 0;
-  Obstacle[] obstacles = new Obstacle[20]; //fixed values..?
-  //Coin[] coins = new Coin[3];
-  Coin coin;
-  Health collectableHealth;
-  JumpBoost jumpBoost;
-  TimeBoost timeBoost;
-  FlameThrowerAmmo flameThrower;
+  Obstacle[] obstacles; //fixed values..?
+  int obstaclesSeen;
+  int coinStartIndex = 0;
+  Coin[] coins;
+  int heartStartIndex = 0;
+  Health[] hearts;
+  int jumpBoostStartIndex = 0;
+  JumpBoost[] jumpBoosts;
+  int flameAmmoStartIndex = 0;
+  FlameThrowerAmmo[] fireballs;
 
   CoinEightBitImageGenerator coinGenerator;
   FlameEightBitImageGenerator flameGenerator;
@@ -35,26 +39,52 @@ class MainScreen extends BaseGameScreen {
   AudioPlayer americanAmbianceAudioPlayer;
   AudioPlayer currentAmbianceAudioPlayer;
 
-
-  PFont hudFont;
-
+  boolean levelPassed = false;
   boolean disableForegroundDraw = false;
 
   MainScreen(ScreenChangeDelegate delegate) {
     super(delegate);
-    float lastPosition = -1;
-    for (int i=0; i < obstacles.length; i++) {
-      lastPosition = lastPosition == -1 ? width : (lastPosition + random(900, 1200));
-      obstacles[i] = new Obstacle(lastPosition, groundLevel, speed, i > 16);
-    }
     activeProjectiles = new ArrayList();
+    readWorldFile();
     loadMusicFiles();
     initHUDElements();
-    coin = new Coin(100, groundLevel, 300, 0);
-    collectableHealth = new Health(100, groundLevel, 300, 0);
-    jumpBoost = new JumpBoost(100, groundLevel, 300, 0);
-    timeBoost = new TimeBoost(100, groundLevel, 300, 0);
-    flameThrower = new FlameThrowerAmmo(100, groundLevel, 300, 0);
+  }
+  private void readWorldFile() {
+    JSONObject json = loadJSONObject("world_data.json");
+    JSONArray obstacleDataArray = json.getJSONArray("obstacles");
+    obstacles = new Obstacle[obstacleDataArray.size()];
+    for (int i=0; i < obstacleDataArray.size(); i++) {
+      JSONObject obstacleData = obstacleDataArray.getJSONObject(i);
+      obstacles[i] = new Obstacle(obstacleData.getFloat("x"), groundLevel, speed, obstacleData.getBoolean("dynamic"));
+    }
+
+    JSONArray coinDataArray = json.getJSONArray("coins");
+    coins = new Coin[coinDataArray.size()];
+    for (int i=0; i < coinDataArray.size(); i++) {
+      JSONObject coinData = coinDataArray.getJSONObject(i);
+      coins[i] = new Coin(coinData.getFloat("x"), groundLevel, coinData.getFloat("y"), speed);
+    }
+    JSONArray healthDataArray = json.getJSONArray("health");
+    hearts = new Health[healthDataArray.size()];
+    for (int i=0; i < healthDataArray.size(); i++) {
+      JSONObject healthData = healthDataArray.getJSONObject(i);
+      hearts[i] = new Health(healthData.getFloat("x"), groundLevel, healthData.getFloat("y"), speed);
+    }
+    JSONArray jumpBoostDataArray = json.getJSONArray("jump_boosts");
+    jumpBoosts = new JumpBoost[jumpBoostDataArray.size()];
+    for (int i=0; i < jumpBoostDataArray.size(); i++) {
+      JSONObject jumpData = jumpBoostDataArray.getJSONObject(i);
+      jumpBoosts[i] = new JumpBoost(jumpData.getFloat("x"), groundLevel, jumpData.getFloat("y"), speed);
+    }
+    JSONArray fireballDataArray = json.getJSONArray("fireballs");
+    fireballs = new FlameThrowerAmmo[fireballDataArray.size()];
+    for (int i=0; i < fireballDataArray.size(); i++) {
+      JSONObject fireballData = fireballDataArray.getJSONObject(i);
+      fireballs[i] = new FlameThrowerAmmo(fireballData.getFloat("x"), groundLevel, fireballData.getFloat("y"), speed);
+    }
+
+
+    distanceRequiredToTravel = json.getFloat("distance_to_travel");
   }
 
   private void loadMusicFiles() {
@@ -66,7 +96,6 @@ class MainScreen extends BaseGameScreen {
   }
 
   private void initHUDElements() {
-    hudFont = createFont("slkscre.ttf", 24);
     coinGenerator = new CoinEightBitImageGenerator(2);
     flameGenerator = new FlameEightBitImageGenerator(1.5);
     heartGenerator = new HeartEightBitImageGenerator(2);
@@ -90,28 +119,58 @@ class MainScreen extends BaseGameScreen {
     for (int i=0; i < obstacles.length; i++) {
       obstacles[i].reset();
     }
+
+    for (int i=0; i < coins.length; i++) {
+      coins[i].reset();
+    }
+
+    for (int i=0; i < hearts.length; i++) {
+      hearts[i].reset();
+    }
+
+    for (int i=0; i < jumpBoosts.length; i++) {
+      jumpBoosts[i].reset();
+    }
+
+    for (int i=0; i < fireballs.length; i++) {
+      fireballs[i].reset();
+    }
+
     obstacleStartIndex = 0;
-    player.reset();
+    coinStartIndex = 0;
+    heartStartIndex = 0;
+    jumpBoostStartIndex = 0;
+    flameAmmoStartIndex = 0;
+
+    obstaclesSeen = 0;
     timeAllowed = 120;
     startMillis = millis();
 
     coinsCollected = 0;
+    totalDistanceTravelled = 0;
+    levelPassed = false;
   }
 
   private void configureForSelectedPlayer(PlayerType playerType) {
     if (currentAmbianceAudioPlayer != null) {
       currentAmbianceAudioPlayer.pause();
     }
-    ProjectileDelegate projDelegate = new ProjectileDelegate() {
+    WorldInteractionDelegate worldInteractDelegate = new WorldInteractionDelegate() {
       public void addProjectileToWorld(BaseProjectile projectile) {
         addProjectileToActiveList(projectile);
       }
+
+      public void bulletTimeEnabled() {
+      }
+
+      public void bulletTimeDisabled() {
+      }
     };
     if (playerType == PlayerType.JAMAICAN) {
-      player = new JamaicanBobSled(runnerX, groundLevel, WORLD_GRAVITY, projDelegate);
+      player = new JamaicanBobSled(runnerX, groundLevel, WORLD_GRAVITY, worldInteractDelegate);
       currentAmbianceAudioPlayer = jamaicanAmbianceAudioPlayer;
     } else {
-      player = new AmericanBobSled(runnerX, groundLevel, WORLD_GRAVITY, projDelegate);
+      player = new AmericanBobSled(runnerX, groundLevel, WORLD_GRAVITY, worldInteractDelegate);
       currentAmbianceAudioPlayer = americanAmbianceAudioPlayer;
     }
     currentAmbianceAudioPlayer.cue(0);
@@ -123,21 +182,65 @@ class MainScreen extends BaseGameScreen {
   }
 
   void drawScreen() {
+    if (levelPassed) return;
     //println(frameRate);
     drawBackground();
     drawCloud();    
     drawTrees();
 
-    coin.updateForDraw();
-    coin.didCollide(player);
-    collectableHealth.updateForDraw();
-    collectableHealth.didCollide(player);
-    jumpBoost.updateForDraw();
-    jumpBoost.didCollide(player);
-    timeBoost.updateForDraw();
-    timeBoost.didCollide(player);
-    flameThrower.updateForDraw();
-    flameThrower.didCollide(player);
+    for (int i=coinStartIndex; i < coins.length; i++) {
+      Coin coin = coins[i];
+      if (coin.isOnScreen()) {
+        coin.updateForDraw();
+        coin.didCollide(player);
+      } else if (coin.onScreenAfterDistance(-totalDistanceTravelled)) {
+        coin.setOffset(totalDistanceTravelled);
+        coin.updateForDraw();
+        coin.didCollide(player);
+      } else if (coin.getRelationToScreen() == Moveable.LEFT_OF_SCREEN) {
+        coinStartIndex = i + 1;
+      } else break;
+    }
+    for (int i=heartStartIndex; i < hearts.length; i++) {
+      Health health = hearts[i];
+      if (health.isOnScreen()) {
+        health.updateForDraw();
+        health.didCollide(player);
+      } else if (health.onScreenAfterDistance(-totalDistanceTravelled)) {
+        health.setOffset(totalDistanceTravelled);
+        health.updateForDraw();
+        health.didCollide(player);
+      } else if (health.getRelationToScreen() == Moveable.LEFT_OF_SCREEN) {
+        heartStartIndex = i + 1;
+      } else break;
+    }
+    for (int i=jumpBoostStartIndex; i < jumpBoosts.length; i++) {
+      JumpBoost boost = jumpBoosts[i];
+      if (boost.isOnScreen()) {
+        boost.updateForDraw();
+        boost.didCollide(player);
+      } else if (boost.onScreenAfterDistance(-totalDistanceTravelled)) {
+        boost.setOffset(totalDistanceTravelled);
+        boost.updateForDraw();
+        boost.didCollide(player);
+      } else if (boost.getRelationToScreen() == Moveable.LEFT_OF_SCREEN) {
+        jumpBoostStartIndex = i + 1;
+      } else break;
+    }
+    for (int i=flameAmmoStartIndex; i < fireballs.length; i++) {
+      FlameThrowerAmmo ammo = fireballs[i];
+      if (ammo.isOnScreen()) {
+        ammo.updateForDraw();
+        ammo.didCollide(player);
+      } else if (ammo.onScreenAfterDistance(-totalDistanceTravelled)) {
+        ammo.setOffset(totalDistanceTravelled);
+        ammo.updateForDraw();
+        ammo.didCollide(player);
+      } else if (ammo.getRelationToScreen() == Moveable.LEFT_OF_SCREEN) {
+        flameAmmoStartIndex = i + 1;
+      } else break;
+    }
+
 
     player.updateForDrawAtPosition();
 
@@ -184,8 +287,10 @@ class MainScreen extends BaseGameScreen {
     for (BaseProjectile projectile : heightToProjectileMap.values()) {
       for (Obstacle obstacle : visibleObstacles) {
         if (projectile.getBottomSideY() > obstacle.getTopSideY()) {
-          if (!obstacle.isDestroyed() && projectile.didPenetrateHitRect(obstacle.getLeftSideX(), obstacle.getTopSideY(), obstacle.getWidth(), obstacle.getHeight())) {
+          if (!obstacle.isDestroyed() && !obstacle.isCollided() && 
+            projectile.didPenetrateHitRect(obstacle.getLeftSideX(), obstacle.getTopSideY(), obstacle.getWidth(), obstacle.getHeight())) {
             obstacle.destroy();
+            obstaclesSeen++;
             activeProjectiles.remove(projectile);
             player.incrementScoreForProjectileHit(projectile);
           }
@@ -193,18 +298,24 @@ class MainScreen extends BaseGameScreen {
       }
     }
 
-    totalDistanceTravelled += speed;
     drawHUD();
+    totalDistanceTravelled += speed;
+
+    if (totalDistanceTravelled > distanceRequiredToTravel) {
+      advanceToNextLevel();
+    }
   }
 
   private void checkForPlayerInteraction(Obstacle obstacle) {
     if (obstacle.didCollide(player)) {
       player.takeDamage();
+      obstaclesSeen++;
+      if (player.getHealth() <= 0) endGame();
     } else if (obstacle.didPassPlayer(player)) {
       player.incrementScoreForObstaclePass();
+      obstaclesSeen++;
     }
   }
-
 
   private void drawTrees() {
     fill(#00ff00);
@@ -243,12 +354,14 @@ class MainScreen extends BaseGameScreen {
   private void drawHUD() {
     int currentTime = timeAllowed + player.getTimeBoostTotal() - (int)((millis() - startMillis)/1000);
     //println("Frame Counter: " + frameCounter + ". Frame Rate: " + frameRate + ". Counter/Rate: " + frameCounter/frameRate);
-    textFont(hudFont);
+    textFont(getEightBitFont());
     fill(#778899);
     textSize(32);
 
     textAlign(CENTER, TOP);
     text("Score: " + player.getScore(), width/2, 10);
+    text(obstaclesSeen + "/" + obstacles.length, width/2, 40);
+
 
     textAlign(LEFT, TOP);
     //health
@@ -270,7 +383,7 @@ class MainScreen extends BaseGameScreen {
 
     fill(#778899);
     textSize(24);
-   
+
     if (player.getEquippedItemKey() == BaseBobSled.KEY_JUMP_BOOST) {
       noFill();
       stroke(#778899);
@@ -304,10 +417,31 @@ class MainScreen extends BaseGameScreen {
     fill(#778899);
     textAlign(CENTER, TOP);
     text("x" + player.getFlamethrowerAmmoCount(), 300, groundLevel + 25 + flameGenerator.getAdjustedImageHeight(), flameGenerator.getAdjustedImageWidth() + 210, 30);
-
-
   }
 
+  private void advanceToNextLevel() {
+    levelPassed = true;
+    performCleanup(); 
+
+    Map<String, Object> transitionDict = new HashMap();
+    transitionDict.put(ScreenChangeDelegate.KEY_SELECTED, 
+      player instanceof JamaicanBobSled ? PlayerType.JAMAICAN : PlayerType.AMERICAN);
+    transitionDict.put(ScreenChangeDelegate.KEY_SCORE, player.getScore());
+    transitionDict.put(ScreenChangeDelegate.KEY_TIME_REMAINING, millis() - startMillis);
+    transitionDict.put(ScreenChangeDelegate.KEY_HEALTH, player.getHealth());
+    transitionDict.put(ScreenChangeDelegate.KEY_COINS, player.getCoinCount());
+    delegate.performScreenChange(null, transitionDict);
+  }
+
+  private void endGame() {
+    performCleanup();
+    Map<String, Object> transitionDict = new HashMap();
+    transitionDict.put(ScreenChangeDelegate.KEY_GAME_RESULT, GameResult.LOST);
+    transitionDict.put(ScreenChangeDelegate.KEY_SELECTED, 
+      player instanceof JamaicanBobSled ? PlayerType.JAMAICAN : PlayerType.AMERICAN);
+    transitionDict.put(ScreenChangeDelegate.KEY_SCORE, player.getScore());
+    delegate.performScreenChange(GameScreen.HIGH_SCORE, transitionDict);
+  }
 
   private void performCleanup() {
     currentAmbianceAudioPlayer.pause();
@@ -324,7 +458,7 @@ class MainScreen extends BaseGameScreen {
       } else if (key == '1') {
         player.setEquippedItemKey(player.getEquippedItemKey() == BaseBobSled.KEY_JUMP_BOOST ? -1 : BaseBobSled.KEY_JUMP_BOOST);
       } else if (key == '2') {
-        player.setEquippedItemKey(player.getEquippedItemKey() == BaseBobSled.KEY_FLAMETHROWER ? - 1 : BaseBobSled.KEY_FLAMETHROWER);        
+        player.setEquippedItemKey(player.getEquippedItemKey() == BaseBobSled.KEY_FLAMETHROWER ? - 1 : BaseBobSled.KEY_FLAMETHROWER);
       } else if (keyCode == ENTER || keyCode == RETURN) {
         if (!player.isProjectileEquipped() || activeProjectiles.size() < 5) {
           player.useEquipped();
@@ -332,6 +466,8 @@ class MainScreen extends BaseGameScreen {
       }
 
       return true;
+    } else {
+     performCleanup(); 
     }
     return false;
   }

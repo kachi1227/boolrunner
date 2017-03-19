@@ -13,10 +13,16 @@ class Health extends BaseCollectable {
     groundPosY = ground;
     this.distanceFromGround = distanceFromGround;
     imageGenerator = new HeartEightBitImageGenerator(3);
-        Minim minim = new Minim(BoolRunnings.this);
+    Minim minim = new Minim(BoolRunnings.this);
     collectionSoundPlayer = minim.loadFile("collide_heart.mp3");
     collectionSoundPlayer.setGain(-15);
-}
+  }
+
+  public void reset() {
+    super.reset();
+    collectionSoundPlayer.rewind();
+  }
+
 
   public void updateForDraw() {
     if (isOnScreen() && !isCollected()) drawHeart();
@@ -48,13 +54,13 @@ class Health extends BaseCollectable {
   float getWidth() {
     return imageGenerator.getAdjustedImageWidth();
   }
-  
+
   float getHeight() {
     return imageGenerator.getAdjustedImageHeight();
   }
 
   void onCollided(BaseBobSled player) {
-        collectionSoundPlayer.play();
+    collectionSoundPlayer.play();
     player.addToTotalHealth(this);
   }
 

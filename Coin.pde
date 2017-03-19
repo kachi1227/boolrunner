@@ -20,6 +20,11 @@ class Coin extends BaseCollectable {
   }
 
 
+  public void reset() {
+    super.reset();
+    collectionSoundPlayer.rewind();
+  }
+
   public void updateForDraw() {
     if (isOnScreen() && !isCollected()) drawCoin();
     updateOffset();

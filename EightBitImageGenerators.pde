@@ -597,20 +597,68 @@ class ClockEightBitImageGenerator extends BaseEightBitImageGenerator {
 class MedalEightBitImageGenerator extends BaseEightBitImageGenerator {
   
   void drawImage(float x, float y) {
-   fill(255, 255, 0);
-   ellipse(x + baseImageWidth()/2, y + baseImageHeight()/2, baseImageWidth(), baseImageHeight());
+    float factor = getScaleFactor();
+    //34x34
+    noStroke();
+    fill(253, 240, 53);
+    rect(x + (2 * factor), y + factor, 13 * factor, 15 * factor); 
+    fill(219, 138, 53);
+    rect(x + (13 * factor), y + factor, factor, factor); 
+    rect(x + (14 * factor), y + (2 * factor), factor, factor); 
+    rect(x + (15 * factor), y + (3 * factor), factor, 11 * factor); 
+    rect(x + (14 * factor), y + (14 * factor), factor, factor); 
+    rect(x + (13 * factor), y + (15 * factor), factor, factor);
+    fill(249, 249, 174);  
+    rect(x + (3 * factor), y + factor, factor, factor);
+    rect(x + (2 * factor), y + (2 * factor), factor, factor);
+    rect(x + factor, y + (3 * factor), factor, 11 * factor);
+    rect(x + (2 * factor), y + (14 * factor), factor, factor); 
+    rect(x + (3 * factor), y + (15 * factor), factor, factor);
+    fill(249, 178, 80);
+    rect(x, y + (3 * factor), factor, 11 * factor); 
+    rect(x + factor, y + (2 * factor), factor, factor);
+    rect(x + (2 * factor), y + factor, factor, factor);
+    rect(x + (3 * factor), y, 11 * factor, factor);
+    rect(x + (14 * factor), y + factor, factor, factor);
+    rect(x + (15 * factor), y + (2 * factor), factor, factor);
+    rect(x + (16 * factor), y + (3 * factor), factor, 11 * factor);
+    rect(x + (15 * factor), y + (14 * factor), factor, factor);   
+    rect(x + (14 * factor), y + (15 * factor), factor, factor);
+    rect(x + (3 * factor), y + (16 * factor), 11 * factor, factor);
+    rect(x + (2 * factor), y + (15 * factor), factor, factor);       
+    rect(x + factor, y + (14 * factor), factor, factor);   
+    fill(252, 174, 82);
+    
+    rect(x + (7 * factor), y + (4 * factor), factor * 3, factor * 9);
+    rect(x + (5 * factor), y + (5 * factor), factor * 2, factor * 2);
+    //rect(x + (6 * factor), y + (5 * factor), factor, (7.5 * factor));
+    //rect(x + (7 * factor), y + (8.5 * factor), factor, factor);
+    //rect(x + (8 * factor), y + (7.5 * factor), factor, factor);
+    //rect(x + (9 * factor), y + (6.5 * factor), factor, factor);
+    //rect(x + (10 * factor), y + (5.5 * factor), factor, factor);
+    //rect(x + (8 * factor), y + (9.5 * factor), factor, factor);
+    //rect(x + (9 * factor), y + (10.5 * factor), factor, factor);
+    //rect(x + (10 * factor), y + (11.5 * factor), factor, factor);
   }
  
   MedalEightBitImageGenerator(float scaleFactor) {
    super(scaleFactor); 
   }
   
-  float baseImageWidth() {
+  /*float baseImageWidth() {
    return 15;
   }
   
   float baseImageHeight() {
    return 23; 
+  }*/
+  
+  float baseImageWidth() {
+   return 17;
+  }
+  
+  float baseImageHeight() {
+   return 17; 
   }
   
 }

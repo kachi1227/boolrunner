@@ -5,6 +5,9 @@ class RussianBoss extends BaseBoss {
   }
 
   protected void drawSelf() {
+        if (getRelationToScreen() == Moveable.LEFT_OF_SCREEN) return;
+    else if (isDefeated()) updateSledRight(getRightX() - getSpeed());
+    
     float x = getLeftX();
     float sledBottom = getBottomY();
     float sledTop = sledBottom - 40;
@@ -66,12 +69,12 @@ class RussianBoss extends BaseBoss {
     arc(x + 10 + 25/2, sledBottom - 40 - 18, 25, 20, PI, 2 * PI);
     //person three eye
     fill(#666666);
-    ellipse(x + 30, sledBottom - 40 - 18 + 5, 3, 3);
+    ellipse(x + 15, sledBottom - 40 - 18 + 5, 3, 3);
     //person three mouth
     noFill();
     stroke(#666666);
     strokeWeight(2);
-    line(x + 23, sledBottom - 40 - 18 + 12, x + 23 + 10, sledBottom - 40 - 18 + 12);
+    line(x + 10, sledBottom - 40 - 18 + 12, x + 20, sledBottom - 40 - 18 + 12);
     
 }
 

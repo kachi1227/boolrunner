@@ -16,6 +16,7 @@ class ChoosePlayerScreen extends BaseGameScreen {
     drawBackground();
     drawSelectJamaicaArea();
     drawSelectAmericaArea();
+    drawInformationalItems();
   }
 
   private void drawSelectJamaicaArea() {
@@ -47,9 +48,9 @@ class ChoosePlayerScreen extends BaseGameScreen {
 
     fill(255);
     textAlign(CENTER);
-    textFont(getTitleFont());
+    textFont(getMainFont());
     textSize(28);
-    text("JAMAICA", JAMAICA_AREA_LEFT, JAMAICA_AREA_TOP + SELECT_AREA_WIDTH + 15, SELECT_AREA_WIDTH, 40);
+    text("Jamaica", JAMAICA_AREA_LEFT, JAMAICA_AREA_TOP + SELECT_AREA_WIDTH + 15, SELECT_AREA_WIDTH, 40);
   }
 
   private void drawSelectAmericaArea() {
@@ -79,10 +80,41 @@ class ChoosePlayerScreen extends BaseGameScreen {
 
     fill(255);
     textAlign(CENTER);
-    textFont(getTitleFont());
+    textFont(getMainFont());
     textSize(28);
     text("USA", AMERICA_AREA_LEFT, AMERICA_AREA_TOP + SELECT_AREA_WIDTH + 15, SELECT_AREA_WIDTH, 40);
   }
+
+  private void drawInformationalItems() {
+    textFont(getTitleFont());
+    fill(255);
+    textSize(40);
+
+    textAlign(CENTER, TOP);
+    text("Choose A Team", width/2, 10);
+
+    textFont(getMainFont());
+    textSize(30);
+    text("Click to Select", width/2, groundLevel - 35);
+
+    drawDescriptionText();
+  }
+
+  private void drawDescriptionText() {
+    String descriptiveText = "";
+    if (mouseInsideJamaica()) {
+      descriptiveText = "Wa gwan, bredrin. Mi se rudeboy fi win di whole ting. Dun kno.";
+    } else if (mouseInsideAmerica()) {
+      descriptiveText = "Team USA. Sorry again for that Trump guy. The Russians will pay.";
+    }
+
+    fill(#778899);
+    textFont(getMainFont());
+    textSize(24);
+    textAlign(CENTER, CENTER);
+    text(descriptiveText, 10, groundLevel, width - 20, 100);
+  }
+
 
   boolean handleMouseClicked() {
     boolean handled = super.handleKeyPressed();
@@ -91,13 +123,13 @@ class ChoosePlayerScreen extends BaseGameScreen {
         //pass jamaican value
         Map<String, Object> selectionMap = new HashMap();
         selectionMap.put(ScreenChangeDelegate.KEY_SELECTED, PlayerType.JAMAICAN);
-        delegate.performScreenChange(selectionMap);
+        delegate.performScreenChange(null, selectionMap);
         return true;
       } else if (mouseInsideAmerica()) {
         //pass american value
         Map<String, Object> selectionMap = new HashMap();
         selectionMap.put(ScreenChangeDelegate.KEY_SELECTED, PlayerType.AMERICAN);
-        delegate.performScreenChange(selectionMap);
+        delegate.performScreenChange(null, selectionMap);
         return true;
       }
     }

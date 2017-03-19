@@ -4,7 +4,6 @@ class Shield extends BaseCollectable {
   private float groundPosY;
   private float distanceFromGround;
   private ShieldEightBitImageGenerator imageGenerator;
-  AudioPlayer collectionSoundPlayer;
 
   public Shield(float posX, float ground, float distanceFromGround, float speed) {
     super(speed);
@@ -12,9 +11,6 @@ class Shield extends BaseCollectable {
     groundPosY = ground;
     this.distanceFromGround = distanceFromGround;
     imageGenerator = new ShieldEightBitImageGenerator(2);
-    Minim minim = new Minim(BoolRunnings.this);
-    collectionSoundPlayer = minim.loadFile("collide_heart.mp3");
-    collectionSoundPlayer.setGain(-15);
   }
 
 
@@ -55,11 +51,13 @@ class Shield extends BaseCollectable {
     return imageGenerator.getAdjustedImageHeight();
   }
 
-  void onCollided(BaseBobSled player) {
-    collectionSoundPlayer.play();
-  }
+  void onCollided(BaseBobSled player) {}
 
   public int getValue() {
-    return 3;
+    return 1;
+  }
+  
+  public int hitProtection() {
+   return 3; 
   }
 }

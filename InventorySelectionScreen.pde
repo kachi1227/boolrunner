@@ -10,10 +10,10 @@ class InventoryItemOrder {
 class InventorySelectionScreen extends BaseGameScreen {
 
   private final static int HEALTH_COST = 55;
-  private final static int SHIELD_COST = 70;
-  private final static int FIREBALL_COST = 90;
-  private final static int ICICLE_COST = 100;
-  private final static int BULLET_TIME_COST = 125;
+  private final static int SHIELD_COST = 60;
+  private final static int FIREBALL_COST = 75;
+  private final static int ICICLE_COST = 85;
+  private final static int BULLET_TIME_COST = 110;
 
   private final float SELECT_AREA_WIDTH = 125;
 
@@ -43,8 +43,6 @@ class InventorySelectionScreen extends BaseGameScreen {
   HourGlassEightBitImageGenerator clockGenerator;
   CoinEightBitImageGenerator coinGenerator;
 
-  PFont eightBitFont;
-
   String insufficientFundsMessage;
 
   Map<String, Object> currentPlayerState;
@@ -57,7 +55,6 @@ class InventorySelectionScreen extends BaseGameScreen {
   }
 
   private void initEightBitItems() {
-    eightBitFont = createFont("slkscre.ttf", 24);
     heartGenerator = new HeartEightBitImageGenerator(4);
     shieldGenerator = new ShieldEightBitImageGenerator(3);
     snowGenerator = new SnowballEightBitImageGenerator(3);
@@ -69,6 +66,8 @@ class InventorySelectionScreen extends BaseGameScreen {
 
   void reset(Map<String, Object> gameStateValues) {
     super.reset(gameStateValues);
+    orderedItems.clear();
+    if (gameStateValues == null) return;
     currentPlayerState = gameStateValues;
     coinsTotal = (int)gameStateValues.get(ScreenChangeDelegate.KEY_COINS);
   }
@@ -97,7 +96,7 @@ class InventorySelectionScreen extends BaseGameScreen {
     text("Press Space When Ready", width/2, groundLevel - 35);
 
     textAlign(LEFT, TOP);
-    textFont(eightBitFont);
+    textFont(getEightBitFont());
     fill(#778899);
     textSize(28);
     //coins
@@ -119,9 +118,9 @@ class InventorySelectionScreen extends BaseGameScreen {
     } else if (mouseInsideShield()) {
       descriptiveText = "Take up to three hits from rival without losing health points.";
     } else if (mouseInsideFireball()) {
-      descriptiveText = "25 fireballs for flamethrower. Rival loses 2 health points for every fireball hit. Also melts rival snowballs.";
+      descriptiveText = "24 fireballs for flamethrower. Rival loses 2 health points for every fireball hit. Also melts rival snowballs.";
     } else if (mouseInsideIcicle()) {
-      descriptiveText = "15 icicles for iciclethrower. Rival loses 4 health points for every icicle hit. Beware: Can turn rival snowballs into icicles.";
+      descriptiveText = "16 icicles for iciclethrower. Rival loses 4 health points for every icicle hit. Beware: Can turn rival snowballs into icicles.";
     } else if (mouseInsideBulletTime()) {
       descriptiveText = "This is exactly what you think it is. Matrix time for 5 seconds, pleighboi.";
     }
@@ -256,7 +255,7 @@ class InventorySelectionScreen extends BaseGameScreen {
   }
 
   private void attemptPurchase(int cost, InventoryItemOrder order) {
-    if (coinsTotal > cost) {
+    if (coinsTotal >= cost) {
       coinsTotal-= cost;
       orderedItems.add(order);
     } else {
@@ -269,7 +268,8 @@ class InventorySelectionScreen extends BaseGameScreen {
     if (!handled) {
       if (key == ' ') {
         currentPlayerState.put(ScreenChangeDelegate.KEY_INVENTORY, orderedItems);
-        delegate.performScreenChange(currentPlayerState);
+        currentPlayerState.put(ScreenChangeDelegate.KEY_COINS, coinsTotal);
+        delegate.performScreenChange(null, currentPlayerState);
       }
       return true;
     }
@@ -286,9 +286,9 @@ class InventorySelectionScreen extends BaseGameScreen {
         attemptPurchase(SHIELD_COST, new InventoryItemOrder(new Shield(0, 0, 0, 0), 1));
         return true;
       } else if (mouseInsideFireball()) {
-        attemptPurchase(FIREBALL_COST, new InventoryItemOrder(new FlameThrowerAmmo(0, 0, 0, 0), 25));
+        attemptPurchase(FIREBALL_COST, new InventoryItemOrder(new FlameThrowerAmmo(0, 0, 0, 0), 24));
       } else if (mouseInsideIcicle()) {
-        attemptPurchase(ICICLE_COST, new InventoryItemOrder(new Icicle(0, 0, 0, 0), 15));
+        attemptPurchase(ICICLE_COST, new InventoryItemOrder(new Icicle(0, 0, 0, 0), 16));
       } else if (mouseInsideBulletTime()) {
         attemptPurchase(BULLET_TIME_COST, new InventoryItemOrder(new BulletTime(0, 0, 0, 0), 1));
       }

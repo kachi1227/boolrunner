@@ -1,6 +1,6 @@
 class JamaicanBobSled extends BaseBobSled {
 
-  JamaicanBobSled(float x, float ground, float gravity, ProjectileDelegate projDelegate) {
+  JamaicanBobSled(float x, float ground, float gravity, WorldInteractionDelegate projDelegate) {
     super(x, ground, gravity, projDelegate);
   }
 
@@ -89,20 +89,28 @@ class JamaicanBobSled extends BaseBobSled {
     stroke(0);
     strokeWeight(2);
     arc(x + 32, sledBottom - 40 - 18 + 8, 20, 10, PI/2, PI);
+    
+    
+    int shieldAlpha = int(map(shieldResistance, 0, 3, 0, 255));
+    fill(168, 168, 168, shieldAlpha);
+    noStroke();
+    arc(x + 130, sledBottom, 60, 80, PI, 2*PI);
+    rect(x, sledTop, 130, 40);
   }
-  
-    protected float getWidth() {
+
+  protected float getWidth() {
     return 170;
   }
   protected float getHeight() {
     return 71;
   }
-  
-    void takeDamage() {
+
+  void takeDamage() {
     health -= 20;
+    health = max(0, health);
   }
-  
+
   void incrementScoreForObstaclePass() {
-   score += 100; 
+    score += 100;
   }
 }

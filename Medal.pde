@@ -15,12 +15,16 @@ class Medal extends BaseCollectable {
     groundPosY = ground;
     this.distanceFromGround = distanceFromGround;
     stoppingPoint = stopPoint;
-    imageGenerator = new MedalEightBitImageGenerator(1);
+    imageGenerator = new MedalEightBitImageGenerator(3);
     Minim minim = new Minim(BoolRunnings.this);
     collectionSoundPlayer = minim.loadFile("coin_collect.mp3");
     collectionSoundPlayer.setGain(-15);
   }
 
+  public void reset() {
+    super.reset();
+    collectionSoundPlayer.rewind();
+  }
 
   public void updateForDraw() {
     if (isOnScreen() && !isCollected()) drawCoin();
@@ -62,7 +66,6 @@ class Medal extends BaseCollectable {
 
   void onCollided(BaseBobSled player) {
     collectionSoundPlayer.play();
-    //player.addToCoinTotal(this);
   }
 
   int getValue() {

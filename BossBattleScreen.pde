@@ -21,10 +21,10 @@ class BossBattleScreen extends BaseGameScreen {
   FlameEightBitImageGenerator flameGenerator;
   IceEightBitImageGenerator iceGenerator;
   ShieldEightBitImageGenerator shieldGenerator;
-  ClockEightBitImageGenerator clockGenerator;
+  HourGlassEightBitImageGenerator hourGlassGenerator;
   AudioPlayer bossAmbianceAudioPlayer;
 
-  PFont hudFont;
+  int bottomHudPage = 0;
 
   BossBattleScreen(ScreenChangeDelegate delegate) {
     super(delegate);
@@ -41,13 +41,12 @@ class BossBattleScreen extends BaseGameScreen {
   }
 
   private void initHUDElements() {
-    hudFont = createFont("slkscre.ttf", 24);
     snowGenerator = new SnowballEightBitImageGenerator(1.5);
     flameGenerator = new FlameEightBitImageGenerator(1.5);
     heartGenerator = new HeartEightBitImageGenerator(2);
     iceGenerator = new IceEightBitImageGenerator(2);
-    shieldGenerator = new ShieldEightBitImageGenerator(2);
-    clockGenerator = new ClockEightBitImageGenerator(2);
+    shieldGenerator = new ShieldEightBitImageGenerator(1.5);
+    hourGlassGenerator = new HourGlassEightBitImageGenerator(1.5);
   }
 
   void reset(Map<String, Object> gameStateValues) {
@@ -59,26 +58,66 @@ class BossBattleScreen extends BaseGameScreen {
     runnerX = 15;
     bossX = width - runnerX;
     groundLevel = height - 100;
+    bottomHudPage = 0;
     if (gameStateValues != null) {
-      //set player, set music
       PlayerType playerType = (PlayerType)gameStateValues.get(ScreenChangeDelegate.KEY_SELECTED);
       configureForSelectedPlayer(playerType);
+      player.setEquippedItemKey(BaseBobSled.KEY_SNOWTHROWER);
+      restorePlayerState(gameStateValues);
     }
-    player.reset();
-    player.setEquippedItemKey(BaseBobSled.KEY_SNOWTHROWER);
-    FlameThrowerAmmo ammo = new FlameThrowerAmmo(0, groundLevel, 100, speed);
-    for (int i=0; i < 50; i++) player.addToFlamethrowerAmmo(ammo);
-    Icicle icicle = new Icicle(0, groundLevel, 100, speed);
-    for (int i=0; i < 50; i++) player.addToIcicles(icicle);
+    activePlayerProjectiles.clear();
+    activeBossProjectiles.clear();
+    championshipMedal = null;
+  }
+
+  private void restorePlayerState(Map<String, Object> gameStateValues) {
+    if (gameStateValues.containsKey(ScreenChangeDelegate.KEY_SCORE)) {
+      player.setScore((int)gameStateValues.get(ScreenChangeDelegate.KEY_SCORE));
+    }
+    if (gameStateValues.containsKey(ScreenChangeDelegate.KEY_HEALTH)) {
+      player.setHealth((int)gameStateValues.get(ScreenChangeDelegate.KEY_HEALTH));
+    }
+    if (gameStateValues.containsKey(ScreenChangeDelegate.KEY_COINS)) {
+      player.setCoinCount((int)gameStateValues.get(ScreenChangeDelegate.KEY_COINS));
+    }
+    List<InventoryItemOrder> orderedItems = (List<InventoryItemOrder>)gameStateValues.get(ScreenChangeDelegate.KEY_INVENTORY);
+    if (orderedItems != null && !orderedItems.isEmpty()) {
+      applyOrderedItems(orderedItems);
+    }
+  }
+
+  private void applyOrderedItems(List<InventoryItemOrder> orderedItems) {
+    for (InventoryItemOrder order : orderedItems) {
+      if (order.collectable instanceof Health) {
+        player.addToTotalHealth((Health)order.collectable);
+      } else if (order.collectable instanceof Shield) {
+        player.addToShields((Shield)order.collectable);
+      } else if (order.collectable instanceof FlameThrowerAmmo) {
+        for (int i=0; i < order.bundleSize/2; i++) {
+          player.addToFlamethrowerAmmo((FlameThrowerAmmo)order.collectable);
+        }
+      } else if (order.collectable instanceof Icicle) {
+        for (int i=0; i < order.bundleSize/2; i++) {
+          player.addToIcicles((Icicle)order.collectable);
+        }
+      } else if (order.collectable instanceof BulletTime) {
+      }
+    }
   }
 
   private void configureForSelectedPlayer(PlayerType playerType) {
     if (bossAmbianceAudioPlayer != null) {
       bossAmbianceAudioPlayer.pause();
     }
-    ProjectileDelegate playerProjDelegate = new ProjectileDelegate() {
+    WorldInteractionDelegate worldInteractDelegate = new WorldInteractionDelegate() {
       public void addProjectileToWorld(BaseProjectile projectile) {
         addProjectileToActiveList(projectile);
+      }
+
+      public void bulletTimeEnabled() {
+      }
+
+      public void bulletTimeDisabled() {
       }
     };
     ProjectileDelegate bossProjDelegate = new ProjectileDelegate() {
@@ -118,10 +157,10 @@ class BossBattleScreen extends BaseGameScreen {
       }
     };
     if (playerType == PlayerType.JAMAICAN) {
-      player = new JamaicanBobSled(runnerX, groundLevel, WORLD_GRAVITY, playerProjDelegate);
+      player = new JamaicanBobSled(runnerX, groundLevel, WORLD_GRAVITY, worldInteractDelegate);
       boss = new EnglishBoss(bossX, groundLevel, WORLD_GRAVITY, speed, intelDelegate, bossProjDelegate);
     } else {
-      player = new AmericanBobSled(runnerX, groundLevel, WORLD_GRAVITY, playerProjDelegate);
+      player = new AmericanBobSled(runnerX, groundLevel, WORLD_GRAVITY, worldInteractDelegate);
       boss = new RussianBoss(bossX, groundLevel, WORLD_GRAVITY, speed, intelDelegate, bossProjDelegate);
     }
     player.enableSnowthrower(true);
@@ -143,10 +182,10 @@ class BossBattleScreen extends BaseGameScreen {
     drawTrees();
     boss.updateForDrawAtPosition();
     player.updateForDrawAtPosition();
-    
+
     if (championshipMedal != null) {
-         championshipMedal.updateForDraw();
-    championshipMedal.didCollide(player); 
+      championshipMedal.updateForDraw();
+      if (championshipMedal.didCollide(player)) endGame(true);
     }
 
     Map<Integer, List<BaseProjectile>> bossChangingProjectileMap = new HashMap();
@@ -192,6 +231,7 @@ class BossBattleScreen extends BaseGameScreen {
         if (projectile.didPenetrateHitRect(player.getLeftX(), player.getTopY(), player.getWidth(), player.getHeight())) {
           player.takeDamageFromProjectileHit(projectile);
           activeBossProjectiles.remove(projectile);
+          if (player.getHealth() <= 0) endGame(false);
         } else {
           List<BaseProjectile> fireProjectiles = bossChangingProjectileMap.get(BaseBobSled.KEY_FLAMETHROWER);
           if (fireProjectiles != null && !fireProjectiles.isEmpty()) {
@@ -259,7 +299,7 @@ class BossBattleScreen extends BaseGameScreen {
   }
 
   private void drawHUD() {
-    textFont(hudFont);
+    textFont(getEightBitFont());
     fill(#778899);
     textSize(32);
 
@@ -278,64 +318,107 @@ class BossBattleScreen extends BaseGameScreen {
     }
 
     textSize(24);
-    if (player.getEquippedItemKey() == BaseBobSled.KEY_SNOWTHROWER) {
-      noFill();
-      stroke(#778899);
-      strokeWeight(3);
-      rect(25, groundLevel + 12, snowGenerator.getAdjustedImageWidth() + 105, flameGenerator.getAdjustedImageHeight() + 40);
-    }
-    noStroke();
-    //Coin HUD
-    snowGenerator.drawImage(30, groundLevel + 25);
-    text("Snow", 30 + snowGenerator.getAdjustedImageWidth() + 10, groundLevel + 25);
-    fill(#778899);
-    textAlign(CENTER, TOP);
-    text("x999", 30, groundLevel + 25 + snowGenerator.getAdjustedImageHeight(), snowGenerator.getAdjustedImageWidth() + 110, 30);
+    if (bottomHudPage == 0) {
+      if (player.getEquippedItemKey() == BaseBobSled.KEY_SNOWTHROWER) {
+        noFill();
+        stroke(#778899);
+        strokeWeight(3);
+        rect(25, groundLevel + 12, snowGenerator.getAdjustedImageWidth() + 105, flameGenerator.getAdjustedImageHeight() + 40);
+      }
+      noStroke();
+      //Coin HUD
+      snowGenerator.drawImage(30, groundLevel + 25);
+      text("Snow", 30 + snowGenerator.getAdjustedImageWidth() + 10, groundLevel + 25);
+      fill(#778899);
+      textAlign(CENTER, TOP);
+      text("x999", 30, groundLevel + 25 + snowGenerator.getAdjustedImageHeight(), snowGenerator.getAdjustedImageWidth() + 110, 30);
 
-    if (player.getEquippedItemKey() == BaseBobSled.KEY_FLAMETHROWER) {
-      noFill();
-      stroke(#778899);
-      strokeWeight(3);
-      rect(295, groundLevel + 15, flameGenerator.getAdjustedImageWidth() + 210, flameGenerator.getAdjustedImageHeight() + 40);
-    }
-    noStroke();
-    //Flamethrower HUD
-    flameGenerator.drawImage(300, groundLevel + 25);
-    fill(248, 120, 0);
-    textAlign(LEFT, TOP);
-    text("Flame Ammo", 300 + flameGenerator.getAdjustedImageWidth() + 10, groundLevel + 25);
-    fill(#778899);
-    textAlign(CENTER, TOP);
-    text("x" + player.getFlamethrowerAmmoCount(), 300, groundLevel + 25 + flameGenerator.getAdjustedImageHeight(), flameGenerator.getAdjustedImageWidth() + 210, 30);
+      if (player.getEquippedItemKey() == BaseBobSled.KEY_FLAMETHROWER) {
+        noFill();
+        stroke(#778899);
+        strokeWeight(3);
+        rect(295, groundLevel + 15, flameGenerator.getAdjustedImageWidth() + 210, flameGenerator.getAdjustedImageHeight() + 40);
+      }
+      noStroke();
+      //Flamethrower HUD
+      flameGenerator.drawImage(300, groundLevel + 25);
+      fill(248, 120, 0);
+      textAlign(LEFT, TOP);
+      text("Flame Ammo", 300 + flameGenerator.getAdjustedImageWidth() + 10, groundLevel + 25);
+      fill(#778899);
+      textAlign(CENTER, TOP);
+      text("x" + player.getFlamethrowerAmmoCount(), 300, groundLevel + 25 + flameGenerator.getAdjustedImageHeight(), flameGenerator.getAdjustedImageWidth() + 210, 30);
 
-    if (player.getEquippedItemKey() == BaseBobSled.KEY_ICETHROWER) {
-      noFill();
-      stroke(#778899);
-      strokeWeight(3);
-      rect(645, groundLevel + 10, iceGenerator.getAdjustedImageWidth() + 135, iceGenerator.getAdjustedImageHeight() + 40);
+      if (player.getEquippedItemKey() == BaseBobSled.KEY_ICETHROWER) {
+        noFill();
+        stroke(#778899);
+        strokeWeight(3);
+        rect(645, groundLevel + 10, iceGenerator.getAdjustedImageWidth() + 135, iceGenerator.getAdjustedImageHeight() + 40);
+      }
+      noStroke();
+      //Jump Boost HUD
+      iceGenerator.drawImage(650, groundLevel + 20);
+      textAlign(LEFT, TOP);
+      fill(149, 204, 245);
+      text("Icicles", 650 + iceGenerator.getAdjustedImageWidth() + 10, groundLevel + 25);
+      fill(#778899);
+      textAlign(CENTER, TOP);
+      text("x" + player.getIcicleCount(), 650, groundLevel + 20 + iceGenerator.getAdjustedImageHeight(), iceGenerator.getAdjustedImageWidth() + 145, 30);
+    } else if (bottomHudPage == 1) {
+      if (player.getEquippedItemKey() == BaseBobSled.KEY_SHIELD) {
+        noFill();
+        stroke(#778899);
+        strokeWeight(3);
+        rect(25, groundLevel + 10, snowGenerator.getAdjustedImageWidth() + 145, shieldGenerator.getAdjustedImageHeight() + 30);
+      }
+      noStroke();
+      //Shield HUD
+      shieldGenerator.drawImage(30, groundLevel + 18);
+      text("Shields", 30 + shieldGenerator.getAdjustedImageWidth() + 10, groundLevel + 20);
+      fill(#778899);
+      textAlign(CENTER, TOP);
+      text("x" + player.getShieldsCount(), 30, groundLevel + 10 + shieldGenerator.getAdjustedImageHeight(), shieldGenerator.getAdjustedImageWidth() + 135, 30);
+
+      if (player.getEquippedItemKey() == BaseBobSled.KEY_BULLET_TIME) {
+        noFill();
+        stroke(#778899);
+        strokeWeight(3);
+        rect(295, groundLevel + 10, hourGlassGenerator.getAdjustedImageWidth() + 210, hourGlassGenerator.getAdjustedImageHeight() + 30);
+      }
+      noStroke();
+      //Bullet time HUD
+      hourGlassGenerator.drawImage(300, groundLevel + 18);
+      fill(248, 120, 0);
+      textAlign(LEFT, TOP);
+      text("Bullet Time", 300 + hourGlassGenerator.getAdjustedImageWidth() + 10, groundLevel + 20);
+      fill(#778899);
+      textAlign(CENTER, TOP);
+      text("x" + player.getFlamethrowerAmmoCount(), 300, groundLevel + 10 + hourGlassGenerator.getAdjustedImageHeight(), hourGlassGenerator.getAdjustedImageWidth() + 210, 30);
     }
-    noStroke();
-    //Jump Boost HUD
-    clockGenerator.drawImage(650, groundLevel + 20);
-    textAlign(LEFT, TOP);
-    fill(149, 204, 245);
-    text("ICICLES", 650 + iceGenerator.getAdjustedImageWidth() + 10, groundLevel + 25);
-    fill(#778899);
-    textAlign(CENTER, TOP);
-    text("x" + player.getIcicleCount(), 650, groundLevel + 20 + iceGenerator.getAdjustedImageHeight(), iceGenerator.getAdjustedImageWidth() + 145, 30);
   }
 
 
   private void addMedalToGame() {
     if (championshipMedal != null) return;
-
-    championshipMedal = new Medal(width + 1500, groundLevel, 300, runnerX + player.getWidth()/2, speed);
+    championshipMedal = new Medal(width + 1500, groundLevel, 300, runnerX + player.getWidth()/2 - 25, speed);
   }
 
 
   private void performCleanup() {
     bossAmbianceAudioPlayer.pause();
   }
+
+  private void endGame(boolean success) {
+    performCleanup();
+    Map<String, Object> transitionDict = new HashMap();
+    transitionDict.put(ScreenChangeDelegate.KEY_GAME_RESULT, success ? GameResult.WON : GameResult.LOST_TO_RIVAL);
+    transitionDict.put(ScreenChangeDelegate.KEY_SELECTED, 
+      player instanceof JamaicanBobSled ? PlayerType.JAMAICAN : PlayerType.AMERICAN);
+    transitionDict.put(ScreenChangeDelegate.KEY_SCORE, player.getScore());
+    delegate.performScreenChange(GameScreen.HIGH_SCORE, transitionDict);
+  }
+
+
 
   boolean handleKeyPressed() {
     boolean handled = super.handleKeyPressed();
@@ -344,13 +427,20 @@ class BossBattleScreen extends BaseGameScreen {
         player.performJump();
         boss.notifyOfPlayerJump();
       } else if (key == '1') {
+        bottomHudPage = 0;
         player.setEquippedItemKey(BaseBobSled.KEY_SNOWTHROWER);
       } else if (key == '2') {
+        bottomHudPage = 0;
         player.setEquippedItemKey(player.getEquippedItemKey() == BaseBobSled.KEY_FLAMETHROWER ? BaseBobSled.KEY_SNOWTHROWER : BaseBobSled.KEY_FLAMETHROWER);
       } else if (key == '3') {
+        bottomHudPage = 0;
         player.setEquippedItemKey(player.getEquippedItemKey() == BaseBobSled.KEY_ICETHROWER ? BaseBobSled.KEY_SNOWTHROWER : BaseBobSled.KEY_ICETHROWER);
       } else if (key == '4') {
+        bottomHudPage = 1;
+        player.setEquippedItemKey(player.getEquippedItemKey() == BaseBobSled.KEY_SHIELD ? BaseBobSled.KEY_SNOWTHROWER : BaseBobSled.KEY_SHIELD);
       } else if (key == '5') {
+        bottomHudPage = 1;
+        player.setEquippedItemKey(player.getEquippedItemKey() == BaseBobSled.KEY_BULLET_TIME ? BaseBobSled.KEY_SNOWTHROWER : BaseBobSled.KEY_BULLET_TIME);
       } else if (keyCode == ENTER || keyCode == RETURN) {
         if (!player.isProjectileEquipped() || activePlayerProjectiles.size() < 5) {
           player.useEquipped();

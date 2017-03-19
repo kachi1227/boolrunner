@@ -14,9 +14,6 @@ class BulletTime extends BaseCollectable {
     groundPosY = ground;
     this.distanceFromGround = distanceFromGround;
     imageGenerator = new HourGlassEightBitImageGenerator(2.5);
-    Minim minim = new Minim(BoolRunnings.this);
-    collectionSoundPlayer = minim.loadFile("collide_time.mp3");
-    collectionSoundPlayer.setGain(-15);
   }
 
 

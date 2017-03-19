@@ -18,6 +18,12 @@ class JumpBoost extends BaseCollectable {
     collectionSoundPlayer.setGain(-15);
   }
 
+  public void reset() {
+    super.reset();
+    collectionSoundPlayer.rewind();
+  }
+
+
   public void updateForDraw() {
     if (isOnScreen() && !isCollected()) drawBoostArrow();
     updateOffset();

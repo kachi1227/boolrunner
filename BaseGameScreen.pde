@@ -10,6 +10,7 @@ abstract class BaseGameScreen {
 
   private PFont titleFont;
   private PFont mainFont;
+  private PFont hudFont;
 
   BaseGameScreen(ScreenChangeDelegate delegate) {
     this.delegate = delegate;
@@ -20,8 +21,9 @@ abstract class BaseGameScreen {
       snowflakes.add(snowflake);
     }
 
-    titleFont = loadFont("Phosphate-Inline-48.vlw");
+    titleFont = loadFont("Phosphate-Inline-100.vlw");
     mainFont = loadFont("Avenir-Roman-48.vlw");
+        hudFont = createFont("slkscre.ttf", 24);
   }
 
   void drawBackground() {
@@ -83,6 +85,9 @@ abstract class BaseGameScreen {
     return mainFont;
   }
 
+  PFont getEightBitFont() {
+   return hudFont; 
+  }
 
 
 

@@ -1,6 +1,11 @@
 import java.util.List;
 import java.util.ArrayList;
 
+interface WorldInteractionDelegate extends ProjectileDelegate {
+  void bulletTimeEnabled();
+  void bulletTimeDisabled();
+}
+
 abstract class BaseBobSled {
 
   final static int KEY_JUMP_BOOST = 0;
@@ -8,6 +13,7 @@ abstract class BaseBobSled {
   final static int KEY_SNOWTHROWER = 2;
   final static int KEY_ICETHROWER = 3;
   final static int KEY_SHIELD = 4;
+  final static int KEY_BULLET_TIME = 5;
 
   final int STANDARD_JUMP_VELOCITY = 20;
 
@@ -20,6 +26,7 @@ abstract class BaseBobSled {
 
   protected int score;
   protected int health;
+  protected int shieldResistance;
   private int totalCoins;
   private int totalTimeBoostInSeconds;
 
@@ -28,7 +35,7 @@ abstract class BaseBobSled {
 
   private ProjectileDelegate projectileDelegate;
 
-  BaseBobSled(float x, float ground, float gravity, ProjectileDelegate projDelegate) {
+  BaseBobSled(float x, float ground, float gravity, WorldInteractionDelegate projDelegate) {
     xPosition = x;
     groundLevel = ground;
     sledBottom = groundLevel;
@@ -44,9 +51,9 @@ abstract class BaseBobSled {
     for (Integer inventoryKey : inventory.keySet()) inventory.put(inventoryKey, new ArrayList());
     equippedKey = -1;
   }
-  
+
   public void performJump() {
-   performJump(false); 
+    performJump(false);
   }
 
   private void performJump(boolean useBoost) {
@@ -69,10 +76,11 @@ abstract class BaseBobSled {
   public boolean isJumping() {
     return performingJump;
   }
-  
+
   public void useEquipped() {
     if (isProjectileEquipped()) fireProjectile();
     else if (equippedKey == KEY_JUMP_BOOST) performJump(true);
+    else if (equippedKey == KEY_SHIELD) bolsterShield();
   }
 
   private void fireProjectile() {
@@ -94,6 +102,17 @@ abstract class BaseBobSled {
   private boolean isProjectileEquipped() {
     return equippedKey == KEY_FLAMETHROWER || equippedKey == KEY_ICETHROWER
       || equippedKey == KEY_SNOWTHROWER;
+  }
+
+  private void bolsterShield() {
+    if (equippedKey != KEY_SHIELD) return;
+    println("yooo");
+    List<BaseCollectable> shieldsList = inventory.get(equippedKey);
+    if (shieldsList != null && !shieldsList.isEmpty()) {
+      BaseCollectable collectable = shieldsList.remove(shieldsList.size() - 1);
+      shieldResistance += ((Shield)collectable).hitProtection();
+      equippedKey = BaseBobSled.KEY_SNOWTHROWER;
+    }
   }
 
   public float getLeftX() {
@@ -129,9 +148,14 @@ abstract class BaseBobSled {
     }
   }
 
+  void setCoinCount(int coinCount) {
+    totalCoins = coinCount;
+  }
+
   int getCoinCount() {
     return totalCoins;
   }
+
 
   void addToJumpBoostTotal(JumpBoost... jumpBoosts) {
     List<BaseCollectable> list = inventory.get(BaseBobSled.KEY_JUMP_BOOST);
@@ -174,7 +198,7 @@ abstract class BaseBobSled {
     List<BaseCollectable> list = inventory.get(BaseBobSled.KEY_FLAMETHROWER);
     return list == null ? 0 : list.size();
   }
-  
+
   void addToIcicles(Icicle... icicles) {
     List<BaseCollectable> list = inventory.get(BaseBobSled.KEY_ICETHROWER);
     if (list == null) {
@@ -190,6 +214,24 @@ abstract class BaseBobSled {
 
   int getIcicleCount() {
     List<BaseCollectable> list = inventory.get(BaseBobSled.KEY_ICETHROWER);
+    return list == null ? 0 : list.size();
+  }
+
+  void addToShields(Shield... shields) {
+    List<BaseCollectable> list = inventory.get(BaseBobSled.KEY_SHIELD);
+    if (list == null) {
+      list = new ArrayList();
+      inventory.put(BaseBobSled.KEY_SHIELD, list);
+    }
+    for (Shield shield : shields) {
+      for (int i=0; i < shield.getValue(); i++) {
+        list.add(shield);
+      }
+    }
+  }
+  
+  int getShieldsCount() {
+    List<BaseCollectable> list = inventory.get(BaseBobSled.KEY_SHIELD);
     return list == null ? 0 : list.size();
   }
 
@@ -209,8 +251,16 @@ abstract class BaseBobSled {
     }
   }
 
+  void setHealth(int health) {
+    this.health = health;
+  }
+
   int getHealth() {
     return health;
+  }
+
+  void setScore(int score) {
+    this.score = score;
   }
 
   int getScore() {
@@ -230,7 +280,11 @@ abstract class BaseBobSled {
   }
 
   public void takeDamageFromProjectileHit(BaseProjectile projectile) {
-    health-= projectile.damageToPlayer();
+    println("Shield Resistance:" + shieldResistance);
+    if (shieldResistance <= 0) health-= projectile.damageToPlayer();
+    else {
+      shieldResistance--;
+    }
   }
 
   protected abstract void drawSelf();

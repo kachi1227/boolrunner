@@ -8,7 +8,7 @@ class Obstacle extends BaseCollidable {
   private boolean destroyed;
   private float destructionHeight;
 
-  AudioPlayer collectionSoundPlayer;
+  AudioPlayer collisionSoundPlayer;
   //Constructor
   public Obstacle(float posX, float ground, float speed, boolean turboRequired) {
     super(speed);
@@ -17,8 +17,8 @@ class Obstacle extends BaseCollidable {
     obstacleWidth = turboRequired ? random(150, 180) : random(75, 80);
     obstacleHeight = turboRequired ? random(210, 250) : random(100, 150);
     Minim minim = new Minim(BoolRunnings.this);
-    collectionSoundPlayer = minim.loadFile("collide_obstacle_2.mp3");
-    collectionSoundPlayer.setGain(-25);
+    collisionSoundPlayer = minim.loadFile("collide_obstacle_2.mp3");
+    collisionSoundPlayer.setGain(-25);
   }    
 
   //Draw the obstacle
@@ -53,8 +53,10 @@ class Obstacle extends BaseCollidable {
    
    public void reset() {
     super.reset();
+    state = null;
     destroyed = false;
     destructionHeight = obstacleHeight;
+    collisionSoundPlayer.rewind();
    }
 
   public float getLeftSideX() {
@@ -94,7 +96,7 @@ class Obstacle extends BaseCollidable {
 
       if (collided) {
         state = CollidableState.COLLIDED;
-        collectionSoundPlayer.play();
+        collisionSoundPlayer.play();
         //println("Collision detected - Sled bottom greater than obstacle: " + (player.getSledBottom() > getTopSideY()) + 
         //        ". Sled right side caught: " + (player.getRightX() > getLeftSideX() && player.getRightX() < getRightSideX()) +
         //        ". Sled left side caught: " + (player.getPositionX() > getLeftSideX() && player.getPositionX() < getRightSideX()));
@@ -104,6 +106,10 @@ class Obstacle extends BaseCollidable {
     }
 
     return false;
+  }
+  
+  public boolean isCollided() {
+   return state == CollidableState.COLLIDED; 
   }
 
   public boolean didPassPlayer(BaseBobSled player) {

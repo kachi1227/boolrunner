@@ -8,6 +8,7 @@ abstract class BaseCollectable extends BaseCollidable {
 
   void reset() {
     super.reset();
+    state = null;
     collected = false;
   }
 
