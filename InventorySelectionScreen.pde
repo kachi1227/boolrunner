@@ -12,8 +12,8 @@ class InventorySelectionScreen extends BaseGameScreen {
   private final static int HEALTH_COST = 55;
   private final static int SHIELD_COST = 60;
   private final static int FIREBALL_COST = 75;
-  private final static int ICICLE_COST = 85;
-  private final static int BULLET_TIME_COST = 110;
+  private final static int ICICLE_COST = 80;
+  private final static int BULLET_TIME_COST = 85;
 
   private final float SELECT_AREA_WIDTH = 125;
 
@@ -33,7 +33,8 @@ class InventorySelectionScreen extends BaseGameScreen {
   private final float BULLET_TIME_AREA_TOP = height/2 + 40 - 75;
 
 
-  int coinsTotal = 100;
+  int coinsTotal = 0;
+  int playerHealth = 0;
 
   HeartEightBitImageGenerator heartGenerator;
   SnowballEightBitImageGenerator snowGenerator;
@@ -70,6 +71,7 @@ class InventorySelectionScreen extends BaseGameScreen {
     if (gameStateValues == null) return;
     currentPlayerState = gameStateValues;
     coinsTotal = (int)gameStateValues.get(ScreenChangeDelegate.KEY_COINS);
+    playerHealth = (int)gameStateValues.get(ScreenChangeDelegate.KEY_HEALTH);
   }
 
   public void drawScreen() {
@@ -104,7 +106,14 @@ class InventorySelectionScreen extends BaseGameScreen {
     text("x" + coinsTotal, width - 110, 11);
     coinGenerator.drawImage(width - 150, 8);
 
+    fill(#778899);
+    textSize(32);
 
+    textAlign(LEFT, TOP);
+    //health
+    text(playerHealth, 45, 10);
+    heartGenerator.setScaleFactor(2);
+    heartGenerator.drawImage(10, 13);
 
     drawDescriptionText();
   }
@@ -116,13 +125,13 @@ class InventorySelectionScreen extends BaseGameScreen {
     } else if (mouseInsideHealth()) {
       descriptiveText = "Increases health points by 15. Thanks, Obamacare.";
     } else if (mouseInsideShield()) {
-      descriptiveText = "Take up to three hits from rival without losing health points.";
+      descriptiveText = "Take up to " + Shield.HITS_PER_SHIELD + " hits from rival without losing health points.";
     } else if (mouseInsideFireball()) {
       descriptiveText = "24 fireballs for flamethrower. Rival loses 2 health points for every fireball hit. Also melts rival snowballs.";
     } else if (mouseInsideIcicle()) {
       descriptiveText = "16 icicles for iciclethrower. Rival loses 4 health points for every icicle hit. Beware: Can turn rival snowballs into icicles.";
     } else if (mouseInsideBulletTime()) {
-      descriptiveText = "This is exactly what you think it is. Matrix time for 5 seconds, pleighboi.";
+      descriptiveText = "This is exactly what you think it is. Matrix time for 10 seconds, pleighboi.";
     }
 
     fill(#778899);
@@ -145,7 +154,7 @@ class InventorySelectionScreen extends BaseGameScreen {
     coinGenerator.drawImage(startingX, startingY);
     textAlign(LEFT, TOP);
     text(String.valueOf(HEALTH_COST), startingX + coinGenerator.getAdjustedImageWidth() + 7, startingY + 3);
-
+    heartGenerator.setScaleFactor(4);
     heartGenerator.drawImage(HEALTH_AREA_LEFT + (SELECT_AREA_WIDTH - heartGenerator.getAdjustedImageWidth())/2, 
       HEALTH_AREA_TOP + (SELECT_AREA_WIDTH - heartGenerator.getAdjustedImageHeight() - coinGenerator.getAdjustedImageHeight())/2);
 
@@ -254,12 +263,14 @@ class InventorySelectionScreen extends BaseGameScreen {
     text("Bullet Time", BULLET_TIME_AREA_LEFT - 20, BULLET_TIME_AREA_TOP + SELECT_AREA_WIDTH + 15, SELECT_AREA_WIDTH + 40, 40);
   }
 
-  private void attemptPurchase(int cost, InventoryItemOrder order) {
+  private boolean attemptPurchase(int cost, InventoryItemOrder order) {
     if (coinsTotal >= cost) {
       coinsTotal-= cost;
       orderedItems.add(order);
+      return true;
     } else {
       insufficientFundsMessage = "Not Enough Coins to Get This Item. Sorry :(";
+      return false;
     }
   }
 
@@ -280,7 +291,9 @@ class InventorySelectionScreen extends BaseGameScreen {
     boolean handled = super.handleKeyPressed();
     if (!handled) {
       if (mouseInsideHealth()) {
-        attemptPurchase(HEALTH_COST, new InventoryItemOrder(new Health(0, 0, 0, 0), 1));
+        if (attemptPurchase(HEALTH_COST, new InventoryItemOrder(new Health(0, 0, 0, 0), 1))) {
+         playerHealth += 15; 
+        }
         return true;
       } else if (mouseInsideShield()) {
         attemptPurchase(SHIELD_COST, new InventoryItemOrder(new Shield(0, 0, 0, 0), 1));

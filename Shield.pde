@@ -1,4 +1,6 @@
 class Shield extends BaseCollectable {
+  
+  public static final int HITS_PER_SHIELD = 10;
 
   private float startPosX;
   private float groundPosY;
@@ -55,9 +57,5 @@ class Shield extends BaseCollectable {
 
   public int getValue() {
     return 1;
-  }
-  
-  public int hitProtection() {
-   return 3; 
   }
 }

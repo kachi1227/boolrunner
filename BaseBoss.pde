@@ -1,18 +1,22 @@
 abstract class BaseBoss implements Moveable {
 
-  final int STANDARD_JUMP_VELOCITY = 25; //4 - bullet time value
+  final int STANDARD_JUMP_VELOCITY = 25;
+  final int BULLET_TIME_JUMP_VELOCITY = 4;
 
   private float sledRight;
   private float groundLevel;
   private float sledBottom;
   private boolean performingJump;
   private float jumpVel;
-  private float gravity;
+  private float regularGravity;
+  private float jumpGravity;
   
   private float speed;
 
   protected int score;
   protected float health;
+
+  private boolean bulletTimeAffected;
 
   private boolean defeated;
 
@@ -23,9 +27,8 @@ abstract class BaseBoss implements Moveable {
     sledRight = xRight;
     groundLevel = ground;
     sledBottom = groundLevel;
-    this.gravity = gravity;
+    this.regularGravity = gravity;
     this.speed = speed;
-    //this.gravity = gravity/25; bullet time value
     configureIntelligence(intelDelegate);
     projectileDelegate = projDelegate;
     reset();
@@ -53,7 +56,8 @@ abstract class BaseBoss implements Moveable {
     if (isJumping()) return;
 
     performingJump = true;
-    jumpVel = STANDARD_JUMP_VELOCITY;
+    jumpVel = bulletTimeAffected ? BULLET_TIME_JUMP_VELOCITY : STANDARD_JUMP_VELOCITY;
+    jumpGravity = bulletTimeAffected ? regularGravity/25 : regularGravity;
   }
 
   public boolean isJumping() {
@@ -61,7 +65,9 @@ abstract class BaseBoss implements Moveable {
   }
 
   public void fireProjectile() {
-    projectileDelegate.addProjectileToWorld(new SnowballProjectile(getLeftX() - 5, getTopY() + getHeight()/2, -8));
+    SnowballProjectile projectile = new SnowballProjectile(getLeftX() - 5, getTopY() + getHeight()/2, -8);
+    projectile.configureForBulletTimeChange(bulletTimeAffected);
+    projectileDelegate.addProjectileToWorld(projectile);
   }
 
   public float getLeftX() {
@@ -83,7 +89,7 @@ abstract class BaseBoss implements Moveable {
   void updateForDrawAtPosition() {
     if (jumpVel > 0 || sledBottom < groundLevel) {
       sledBottom -= jumpVel;
-      jumpVel -= gravity;
+      jumpVel -= jumpGravity;
       sledBottom = min(sledBottom, groundLevel);
     } else if (performingJump) {
       performingJump = false;
@@ -110,6 +116,11 @@ abstract class BaseBoss implements Moveable {
 
   public void takeDamageFromProjectileHit(BaseProjectile projectile) {
     health-= projectile.damageToBoss();
+  }
+  
+  public void configureForBulletTimeChange(boolean enabled) {
+   bulletTimeAffected = enabled;
+   intelligence.configureForBulletTimeChange(enabled);
   }
 
   public void updateSledRight(float newSledRight) {

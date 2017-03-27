@@ -11,10 +11,16 @@ abstract class BaseProjectile implements Moveable {
   private float offset;
   private float speed;
   CollidableState state;
+  
+  boolean bulletTimeAffected;
 
   BaseProjectile(float speed) {
     this.speed = speed;
     offset = 0;
+  }
+  
+  public void configureForBulletTimeChange(boolean enabled) {
+   bulletTimeAffected = enabled; 
   }
 
   void setSpeed(float speed) {
@@ -22,11 +28,12 @@ abstract class BaseProjectile implements Moveable {
   }
 
   float getSpeed() {
-    return speed;
+    float adjustedSpeed = bulletTimeAffected ? speed/4 : speed;
+    return adjustedSpeed;
   }
 
   void updateOffset() {
-    offset += speed;
+    offset += getSpeed();
   }
 
   float getOffset() {

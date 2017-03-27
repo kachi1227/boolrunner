@@ -101,6 +101,7 @@ class BossBattleScreen extends BaseGameScreen {
           player.addToIcicles((Icicle)order.collectable);
         }
       } else if (order.collectable instanceof BulletTime) {
+        player.addToBulletTime((BulletTime)order.collectable);
       }
     }
   }
@@ -114,10 +115,11 @@ class BossBattleScreen extends BaseGameScreen {
         addProjectileToActiveList(projectile);
       }
 
-      public void bulletTimeEnabled() {
-      }
-
-      public void bulletTimeDisabled() {
+      public void bulletTimeStatusChange(boolean enabled) {
+        boss.configureForBulletTimeChange(enabled);
+        for (BaseProjectile projectile : activeBossProjectiles) {
+          projectile.configureForBulletTimeChange(enabled);
+        }
       }
     };
     ProjectileDelegate bossProjDelegate = new ProjectileDelegate() {
@@ -393,7 +395,7 @@ class BossBattleScreen extends BaseGameScreen {
       text("Bullet Time", 300 + hourGlassGenerator.getAdjustedImageWidth() + 10, groundLevel + 20);
       fill(#778899);
       textAlign(CENTER, TOP);
-      text("x" + player.getFlamethrowerAmmoCount(), 300, groundLevel + 10 + hourGlassGenerator.getAdjustedImageHeight(), hourGlassGenerator.getAdjustedImageWidth() + 210, 30);
+      text("x" + player.getBulletTimeCount(), 300, groundLevel + 10 + hourGlassGenerator.getAdjustedImageHeight(), hourGlassGenerator.getAdjustedImageWidth() + 210, 30);
     }
   }
 
@@ -422,7 +424,8 @@ class BossBattleScreen extends BaseGameScreen {
 
   boolean handleKeyPressed() {
     boolean handled = super.handleKeyPressed();
-    if (!handled) {
+    if (handled) performCleanup();
+    else {
       if ( key == ' ' && !player.isJumping()) {
         player.performJump();
         boss.notifyOfPlayerJump();

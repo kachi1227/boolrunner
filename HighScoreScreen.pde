@@ -54,7 +54,7 @@ class HighScoreScreen extends BaseGameScreen {
       if (gameResult == GameResult.LOST) {
         subtitle = "Yikes, you didn't even qualify. What Would Usain Do?";
       } else if (gameResult == GameResult.LOST_TO_RIVAL) {
-        subtitle = "You lost to Britain. David Cameron wants you to \"move on\".";
+        subtitle = "You lost to Britain. So close, yet so rastafar away.";
       } else if (gameResult == GameResult.WON) {
         subtitle = "Jamaica - 1 | Imperialism - 0";
       }

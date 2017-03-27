@@ -58,6 +58,10 @@ class BulletTime extends BaseCollectable {
   }
 
   int getValue() {
-    return 5000; //last for 5 seconds...
+    return 1;
+  }
+  
+  int getDuration() {
+   return 10000; 
   }
 }

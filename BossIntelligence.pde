@@ -54,17 +54,26 @@ class PlayerProjectileData {
 }
 class BossIntelligence {
   private static final int MILLIS_BETWEEN_UNPROVOKED_ATTACKS = 3000;
+  private static final int MILLIS_BETWEEN_SHOTS_STANDARD = 150;
   BossStatusDelegate statusDelegate;
   WorldAwarenessDelegate worldDelegate;
 
   List<PendingBossAction> pendingActions;
+  long shotWaitTime;
+  
   BossIntelligence(BossStatusDelegate bsDelegate, WorldAwarenessDelegate waDelegate) {
     statusDelegate = bsDelegate;
     worldDelegate = waDelegate;
     pendingActions = new ArrayList();
+    shotWaitTime = MILLIS_BETWEEN_SHOTS_STANDARD;
   }
 
   long lastUnprovokedShotTime;
+  
+  
+  void configureForBulletTimeChange(boolean enabled) {
+    shotWaitTime = MILLIS_BETWEEN_SHOTS_STANDARD * (enabled ? 15 : 1);  
+  }
 
   int getActionsToPerform() {
     int actionsToDo = BossAction.NOTHING.getFlag();
@@ -102,12 +111,12 @@ class BossIntelligence {
     int shotMove = potentialShotMove[int(random(potentialShotMove.length))];
     List<Integer> shootActions = breakdownMultipleShots(shotMove);
     for (int i=0; i < shootActions.size(); i++) {
-      pendingActions.add(new PendingBossAction(millis() + (i * 150), shootActions.get(i)));
+      pendingActions.add(new PendingBossAction(millis() + (i * shotWaitTime), shootActions.get(i)));
     }
     if (allowedToJump && (firstMove & BossAction.JUMP.getFlag()) == 0) {
       int potentialJumpMoment = int(random(shootActions.size()));
       int lastMove = potentialAuxillaryMove[int(random(potentialAuxillaryMove.length))];
-      pendingActions.add(new PendingBossAction(millis() + (potentialJumpMoment * 150), lastMove));
+      pendingActions.add(new PendingBossAction(millis() + (potentialJumpMoment * shotWaitTime), lastMove));
     }
     lastUnprovokedShotTime = pendingActions.get(pendingActions.size() - 2).millisInFuture; //this gets the time of last actual shot
   }
@@ -128,7 +137,7 @@ class BossIntelligence {
       if ((chosenAction & ~BossAction.JUMP.getFlag()) > 0) {
         List<Integer> shootActions = breakdownMultipleShots(chosenAction);
         for (int i=0; i < shootActions.size(); i++) {
-          pendingActions.add(new PendingBossAction(millis() + 250 + (i * 150), shootActions.get(i)));
+          pendingActions.add(new PendingBossAction(millis() + 250 + (i * shotWaitTime), shootActions.get(i)));
         }
       }
     }

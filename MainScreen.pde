@@ -50,7 +50,13 @@ class MainScreen extends BaseGameScreen {
     initHUDElements();
   }
   private void readWorldFile() {
-    JSONObject json = loadJSONObject("world_data.json");
+    JSONObject worldData = loadJSONObject("world_data.json");
+    JSONArray worldConfigs = worldData.getJSONArray("world_configs");
+    int worldIndex = worldData.getInt("world_index");
+    if (worldIndex == -1) {
+     worldIndex = int(random(0, worldConfigs.size())); 
+    }
+    JSONObject json = worldConfigs.getJSONObject(worldIndex);
     JSONArray obstacleDataArray = json.getJSONArray("obstacles");
     obstacles = new Obstacle[obstacleDataArray.size()];
     for (int i=0; i < obstacleDataArray.size(); i++) {
@@ -160,10 +166,8 @@ class MainScreen extends BaseGameScreen {
         addProjectileToActiveList(projectile);
       }
 
-      public void bulletTimeEnabled() {
-      }
-
-      public void bulletTimeDisabled() {
+      public void bulletTimeStatusChange(boolean enabled) {
+        
       }
     };
     if (playerType == PlayerType.JAMAICAN) {
@@ -352,7 +356,7 @@ class MainScreen extends BaseGameScreen {
   }
 
   private void drawHUD() {
-    int currentTime = timeAllowed + player.getTimeBoostTotal() - (int)((millis() - startMillis)/1000);
+    int currentTime = timeAllowed - (int)((millis() - startMillis)/1000);
     //println("Frame Counter: " + frameCounter + ". Frame Rate: " + frameRate + ". Counter/Rate: " + frameCounter/frameRate);
     textFont(getEightBitFont());
     fill(#778899);
@@ -449,8 +453,8 @@ class MainScreen extends BaseGameScreen {
 
   boolean handleKeyPressed() {
     boolean handled = super.handleKeyPressed();
-    if (!handled) {
-      //println("YOOOO");
+    if (handled) performCleanup();
+    else {
       //if space is pressed, perform jump.
       //if enter is used to start game, have that occur here (could also occur in mousePressed)
       if ( key == ' ' && !player.isJumping()) {
@@ -466,8 +470,6 @@ class MainScreen extends BaseGameScreen {
       }
 
       return true;
-    } else {
-     performCleanup(); 
     }
     return false;
   }

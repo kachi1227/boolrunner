@@ -34,7 +34,8 @@ abstract class BaseGameScreen {
     rect(0, groundLevel, width, 100);
 
     //sky
-    fill(135, 206, 235);
+    fill(#27408B);
+    //fill(135, 206, 235);
     rect(0, 0, width, height - 100);
 
     drawSnow();

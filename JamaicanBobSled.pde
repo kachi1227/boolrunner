@@ -91,7 +91,7 @@ class JamaicanBobSled extends BaseBobSled {
     arc(x + 32, sledBottom - 40 - 18 + 8, 20, 10, PI/2, PI);
     
     
-    int shieldAlpha = int(map(shieldResistance, 0, 3, 0, 255));
+    int shieldAlpha = int(map(shieldResistance, 0, Shield.HITS_PER_SHIELD, 0, 255));
     fill(168, 168, 168, shieldAlpha);
     noStroke();
     arc(x + 130, sledBottom, 60, 80, PI, 2*PI);

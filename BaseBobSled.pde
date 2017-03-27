@@ -2,8 +2,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 interface WorldInteractionDelegate extends ProjectileDelegate {
-  void bulletTimeEnabled();
-  void bulletTimeDisabled();
+  void bulletTimeStatusChange(boolean enabled);
 }
 
 abstract class BaseBobSled {
@@ -28,20 +27,20 @@ abstract class BaseBobSled {
   protected int health;
   protected int shieldResistance;
   private int totalCoins;
-  private int totalTimeBoostInSeconds;
+  private long bulletTimeEndTime = -1;
 
   private Map<Integer, List<BaseCollectable>> inventory;
   private int equippedKey = -1;
 
-  private ProjectileDelegate projectileDelegate;
+  private WorldInteractionDelegate worldDelegate;
 
-  BaseBobSled(float x, float ground, float gravity, WorldInteractionDelegate projDelegate) {
+  BaseBobSled(float x, float ground, float gravity, WorldInteractionDelegate worldDelegate) {
     xPosition = x;
     groundLevel = ground;
     sledBottom = groundLevel;
     this.gravity = gravity;
     inventory = new HashMap();
-    projectileDelegate = projDelegate;
+    this.worldDelegate = worldDelegate;
     reset();
   }
 
@@ -81,17 +80,18 @@ abstract class BaseBobSled {
     if (isProjectileEquipped()) fireProjectile();
     else if (equippedKey == KEY_JUMP_BOOST) performJump(true);
     else if (equippedKey == KEY_SHIELD) bolsterShield();
+    else if (equippedKey == KEY_BULLET_TIME) startOrExtendBulletTime();
   }
 
   private void fireProjectile() {
     if (equippedKey == BaseBobSled.KEY_SNOWTHROWER) {
-      projectileDelegate.addProjectileToWorld(new SnowballProjectile(getRightX() + 5, getTopY() + getHeight()/2, 6));
+      worldDelegate.addProjectileToWorld(new SnowballProjectile(getRightX() + 5, getTopY() + getHeight()/2, 6));
     } else {
       List<BaseCollectable> projectileList = inventory.get(equippedKey);
       if (projectileList != null && !projectileList.isEmpty()) {
         BaseCollectable collectable = projectileList.remove(projectileList.size() - 1);
         if (collectable instanceof Projectilable) {
-          projectileDelegate.addProjectileToWorld(((Projectilable)collectable).convertToProjectile(getRightX() + 5, getTopY() + getHeight()/2));
+          worldDelegate.addProjectileToWorld(((Projectilable)collectable).convertToProjectile(getRightX() + 5, getTopY() + getHeight()/2));
           collectable.onUsed();
         }
         if (projectileList.isEmpty() && inventory.containsKey(BaseBobSled.KEY_SNOWTHROWER)) equippedKey = BaseBobSled.KEY_SNOWTHROWER;
@@ -106,12 +106,25 @@ abstract class BaseBobSled {
 
   private void bolsterShield() {
     if (equippedKey != KEY_SHIELD) return;
-    println("yooo");
     List<BaseCollectable> shieldsList = inventory.get(equippedKey);
     if (shieldsList != null && !shieldsList.isEmpty()) {
-      BaseCollectable collectable = shieldsList.remove(shieldsList.size() - 1);
-      shieldResistance += ((Shield)collectable).hitProtection();
+      shieldsList.remove(shieldsList.size() - 1);
+      shieldResistance += Shield.HITS_PER_SHIELD;
       equippedKey = BaseBobSled.KEY_SNOWTHROWER;
+    }
+  }
+
+  private void startOrExtendBulletTime() {
+    if (equippedKey != KEY_BULLET_TIME) return;
+    List<BaseCollectable> bulletTimeList = inventory.get(equippedKey);
+    if (bulletTimeList != null && !bulletTimeList.isEmpty()) {
+      BulletTime collectable = (BulletTime)bulletTimeList.remove(bulletTimeList.size() - 1);
+      if (bulletTimeEndTime == -1) {
+        bulletTimeEndTime = millis() + collectable.getDuration();
+        worldDelegate.bulletTimeStatusChange(true);
+      } else {
+        bulletTimeEndTime += collectable.getDuration();
+      }
     }
   }
 
@@ -134,10 +147,14 @@ abstract class BaseBobSled {
   void updateForDrawAtPosition() {
     if (jumpVel > 0 || sledBottom < groundLevel) {
       sledBottom -= jumpVel;
-      jumpVel -= gravity;
+      jumpVel -= (jumpVel <= 0 && bulletTimeEndTime > -1 ? gravity/25 : gravity);
       sledBottom = min(sledBottom, groundLevel);
     } else if (performingJump) {
       performingJump = false;
+    }
+    if (bulletTimeEndTime > -1 && millis() > bulletTimeEndTime) {
+      bulletTimeEndTime = -1;
+      worldDelegate.bulletTimeStatusChange(false);
     }
     drawSelf();
   }
@@ -229,20 +246,28 @@ abstract class BaseBobSled {
       }
     }
   }
-  
+
   int getShieldsCount() {
     List<BaseCollectable> list = inventory.get(BaseBobSled.KEY_SHIELD);
     return list == null ? 0 : list.size();
   }
 
-  void addToTimeBoostTotal(TimeBoost... timeBoosts) {
-    for (TimeBoost timeBoost : timeBoosts) {
-      totalTimeBoostInSeconds += timeBoost.getValue();
+  void addToBulletTime(BulletTime... bulletTimes) {
+    List<BaseCollectable> list = inventory.get(BaseBobSled.KEY_BULLET_TIME);
+    if (list == null) {
+      list = new ArrayList();
+      inventory.put(BaseBobSled.KEY_BULLET_TIME, list);
+    }
+    for (BulletTime bulletTime : bulletTimes) {
+      for (int i=0; i < bulletTime.getValue(); i++) {
+        list.add(bulletTime);
+      }
     }
   }
 
-  int getTimeBoostTotal() {
-    return totalTimeBoostInSeconds;
+  int getBulletTimeCount() {
+    List<BaseCollectable> list = inventory.get(BaseBobSled.KEY_BULLET_TIME);
+    return list == null ? 0 : list.size();
   }
 
   void addToTotalHealth(Health... hearts) {
@@ -280,7 +305,6 @@ abstract class BaseBobSled {
   }
 
   public void takeDamageFromProjectileHit(BaseProjectile projectile) {
-    println("Shield Resistance:" + shieldResistance);
     if (shieldResistance <= 0) health-= projectile.damageToPlayer();
     else {
       shieldResistance--;

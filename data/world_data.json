@@ -1,4 +1,5 @@
-{
+{"world_index": -1,
+	"world_configs": [{
 	"distance_to_travel": 37000,
 	"obstacles" : [
 	{"id" :1, "x": 900, "dynamic": false},
@@ -87,4 +88,4 @@
 	{"id" :28, "x" : 36700, "y" : 60},
 	{"id" :29, "x" : 36800, "y" : 60},
 	{"id" :30, "x" : 36900, "y" : 60},]
-}
+}]}
