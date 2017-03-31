@@ -4,7 +4,7 @@ class Medal extends BaseCollectable {
   private float groundPosY;
   private float distanceFromGround;
   private float stoppingPoint;
-  
+
   private MedalEightBitImageGenerator imageGenerator;
 
   AudioPlayer collectionSoundPlayer;
@@ -66,6 +66,7 @@ class Medal extends BaseCollectable {
 
   void onCollided(BaseBobSled player) {
     collectionSoundPlayer.play();
+    player.incrementScoreForMedalCollection();
   }
 
   int getValue() {

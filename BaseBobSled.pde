@@ -310,6 +310,10 @@ abstract class BaseBobSled {
       shieldResistance--;
     }
   }
+  
+  void incrementScoreForMedalCollection() {
+    score += 1000;
+  }
 
   protected abstract void drawSelf();
   protected abstract float getWidth();

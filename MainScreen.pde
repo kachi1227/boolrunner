@@ -54,7 +54,7 @@ class MainScreen extends BaseGameScreen {
     JSONArray worldConfigs = worldData.getJSONArray("world_configs");
     int worldIndex = worldData.getInt("world_index");
     if (worldIndex == -1) {
-     worldIndex = int(random(0, worldConfigs.size())); 
+      worldIndex = int(random(0, worldConfigs.size()));
     }
     JSONObject json = worldConfigs.getJSONObject(worldIndex);
     JSONArray obstacleDataArray = json.getJSONArray("obstacles");
@@ -167,7 +167,6 @@ class MainScreen extends BaseGameScreen {
       }
 
       public void bulletTimeStatusChange(boolean enabled) {
-        
       }
     };
     if (playerType == PlayerType.JAMAICAN) {
@@ -444,7 +443,9 @@ class MainScreen extends BaseGameScreen {
     transitionDict.put(ScreenChangeDelegate.KEY_SELECTED, 
       player instanceof JamaicanBobSled ? PlayerType.JAMAICAN : PlayerType.AMERICAN);
     transitionDict.put(ScreenChangeDelegate.KEY_SCORE, player.getScore());
-    delegate.performScreenChange(GameScreen.HIGH_SCORE, transitionDict);
+    transitionDict.put(ScreenChangeDelegate.KEY_COINS, player.getCoinCount());
+    transitionDict.put(ScreenChangeDelegate.KEY_HEALTH, max(0, player.getHealth()));
+    delegate.performScreenChange(GameScreen.GAME_RESULT, transitionDict);
   }
 
   private void performCleanup() {

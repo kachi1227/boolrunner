@@ -16,6 +16,7 @@ class Obstacle extends BaseCollidable {
     groundPosY = ground;
     obstacleWidth = turboRequired ? random(150, 180) : random(75, 80);
     obstacleHeight = turboRequired ? random(210, 250) : random(100, 150);
+
     Minim minim = new Minim(BoolRunnings.this);
     collisionSoundPlayer = minim.loadFile("collide_obstacle_2.mp3");
     collisionSoundPlayer.setGain(-25);
@@ -31,7 +32,7 @@ class Obstacle extends BaseCollidable {
       //Draw each obstacle as a rectangle using the variables in the class
       stroke(255);
       fill(255);
-      
+
       rect(startPosX - getOffset(), groundPosY - getHeight(), obstacleWidth, getHeight(), 10);
       rect(startPosX - getOffset(), groundPosY - min(10, getHeight()), obstacleWidth, min(10, getHeight()));
     }
@@ -41,23 +42,13 @@ class Obstacle extends BaseCollidable {
     }
   }
 
-  //DEBUG method
-  /*public void updateForDisabled() {
-   if (isOnScreen()) {
-   //Draw each obstacle as a rectangle using the variables in the class
-   stroke(255);
-   fill(255);
-   ellipse(startPosX - offset, groundPosY, obstacleWidth, obstacleHeight);
-   }
-   }*/
-   
-   public void reset() {
+  public void reset() {
     super.reset();
     state = null;
     destroyed = false;
     destructionHeight = obstacleHeight;
     collisionSoundPlayer.rewind();
-   }
+  }
 
   public float getLeftSideX() {
     return startPosX - getOffset();
@@ -72,13 +63,13 @@ class Obstacle extends BaseCollidable {
   public float getTopSideY() {
     return groundPosY - getHeight();
   }
-  
+
   public float getWidth() {
-   return obstacleWidth; 
+    return obstacleWidth;
   }
-  
+
   public float getHeight() {
-   return destroyed ? destructionHeight : obstacleHeight; 
+    return destroyed ? destructionHeight : obstacleHeight;
   }
 
   public boolean didCollide(BaseBobSled player) {
@@ -107,9 +98,9 @@ class Obstacle extends BaseCollidable {
 
     return false;
   }
-  
+
   public boolean isCollided() {
-   return state == CollidableState.COLLIDED; 
+    return state == CollidableState.COLLIDED;
   }
 
   public boolean didPassPlayer(BaseBobSled player) {
@@ -120,12 +111,12 @@ class Obstacle extends BaseCollidable {
 
     return false;
   }
-  
+
   public void destroy() {
-   destroyed = true; 
+    destroyed = true;
   }
-  
+
   public boolean isDestroyed() {
-   return destroyed; 
+    return destroyed;
   }
 }  

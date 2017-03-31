@@ -25,15 +25,16 @@ class StartGameScreen extends BaseGameScreen {
       delegate.performScreenChange(null, null);
       return true;
     } else if (key == 'k') {
-     Map<String, Object>transitionMap = new HashMap();
-    transitionMap.put(ScreenChangeDelegate.KEY_SELECTED, PlayerType.AMERICAN);
-    transitionMap.put(ScreenChangeDelegate.KEY_SCORE, 1650);
-    transitionMap.put(ScreenChangeDelegate.KEY_TIME_REMAINING, 60000);
-    transitionMap.put(ScreenChangeDelegate.KEY_HEALTH, 120);
-    transitionMap.put(ScreenChangeDelegate.KEY_COINS, 600);
-    delegate.performScreenChange(GameScreen.INVENTORY, transitionMap);
-    return true;  
-  }
+      Map<String, Object> transitionMap = new HashMap();
+      transitionMap.put(ScreenChangeDelegate.KEY_SELECTED, PlayerType.AMERICAN);
+      transitionMap.put(ScreenChangeDelegate.KEY_SCORE, 1650);
+      transitionMap.put(ScreenChangeDelegate.KEY_TIME_REMAINING, 60000);
+      transitionMap.put(ScreenChangeDelegate.KEY_HEALTH, 120);
+      transitionMap.put(ScreenChangeDelegate.KEY_COINS, 600);
+      delegate.performScreenChange(GameScreen.INVENTORY, transitionMap);
+      return true;
+    }
+
     return false;
   }
 }

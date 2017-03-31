@@ -417,7 +417,9 @@ class BossBattleScreen extends BaseGameScreen {
     transitionDict.put(ScreenChangeDelegate.KEY_SELECTED, 
       player instanceof JamaicanBobSled ? PlayerType.JAMAICAN : PlayerType.AMERICAN);
     transitionDict.put(ScreenChangeDelegate.KEY_SCORE, player.getScore());
-    delegate.performScreenChange(GameScreen.HIGH_SCORE, transitionDict);
+    transitionDict.put(ScreenChangeDelegate.KEY_COINS, player.getCoinCount());
+    transitionDict.put(ScreenChangeDelegate.KEY_HEALTH, max(0, player.getHealth()));
+    delegate.performScreenChange(GameScreen.GAME_RESULT, transitionDict);
   }
 
 

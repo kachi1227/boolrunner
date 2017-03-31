@@ -38,7 +38,8 @@ class AmericanBobSled extends BaseBobSled {
 
     //person one hair
     fill(#FF8247);
-    rect(x + 100, sledBottom - 40 - 18 - 7, 25, 7);
+    arc(x + 100 + 25/2, sledBottom - 40 - 18, 25, 20, PI, 2 * PI);
+    rect(x + 100, sledBottom - 40 - 20, 10, 15);
 
     //person one eye
     fill(#8B7765);
@@ -58,7 +59,8 @@ class AmericanBobSled extends BaseBobSled {
     //person two hair
     fill(#FFEC8B);
     arc(x + 55 + 25/2, sledBottom - 40 - 18, 25, 20, PI, 2 * PI);
-
+    ellipse(x + 53, sledBottom - 40 - 18, 10, 10);
+    rect(x + 55, sledBottom - 40 - 20, 10, 15);
 
     //person two eye
     fill(#8B7765);
@@ -77,7 +79,9 @@ class AmericanBobSled extends BaseBobSled {
 
     //person three hair
     fill(#8B4500);
-    rect(x + 10, sledBottom - 40 - 18 - 7, 25, 7);
+    arc(x + 10 + 25/2, sledBottom - 40 - 18, 25, 20, PI, 2 * PI);
+    ellipse(x + 8, sledBottom - 40 - 18, 10, 10);
+    triangle(x + 8, sledBottom - 40 - 18, x + 3, sledBottom - 40 - 2, x + 8, sledBottom - 40 - 2);
 
     //person three eye
     fill(#8B7765);

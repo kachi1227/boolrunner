@@ -3,7 +3,6 @@ abstract class BaseGameScreen {
   float speed = 14; //suggested max of 13
   int groundLevel;
 
-
   ArrayList<Snow> snowflakes = new ArrayList<Snow>();
   
   ScreenChangeDelegate delegate;
@@ -28,16 +27,13 @@ abstract class BaseGameScreen {
 
   void drawBackground() {
     noStroke();
-
+    //sky
+    fill(135, 206, 235);
+    rect(0, 0, width, height - 100);
     //ground
     fill(255);
     rect(0, groundLevel, width, 100);
-
-    //sky
-    fill(#27408B);
-    //fill(135, 206, 235);
-    rect(0, 0, width, height - 100);
-
+    
     drawSnow();
   }
 
