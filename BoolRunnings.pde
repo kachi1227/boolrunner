@@ -45,7 +45,7 @@ interface HighScoreEvaluator {
   List<HighScore> getHighScoreList();
 }
 
-final static String HIGH_SCORE_DEST_FILE = "data/high_scores.json";
+final static String HIGH_SCORE_DEST_FILE = "high_scores.json";
 
 GameScreen currentScreen = GameScreen.START;
 Map<GameScreen, BaseGameScreen> screenMap;
@@ -119,8 +119,6 @@ private void loadHighScores() {
     }
     names.add(name);
   }
-
-  println(highScoresMap);
 }
 
 void draw() {
@@ -221,7 +219,7 @@ private JSONArray createAndSaveNewHighScores() {
     emptyScoresJsonArray.append(highScoreJson);
   }
 
-  saveJSONArray(emptyScoresJsonArray, HIGH_SCORE_DEST_FILE);
+  saveJSONArray(emptyScoresJsonArray, dataPath(HIGH_SCORE_DEST_FILE));
   return emptyScoresJsonArray;
 }
 
@@ -236,12 +234,12 @@ private void writeHighScoresToFile() {
       highScoresJsonArray.append(highScoreJson);
     }
   }
-  saveJSONArray(highScoresJsonArray, HIGH_SCORE_DEST_FILE);
+  saveJSONArray(highScoresJsonArray, dataPath(HIGH_SCORE_DEST_FILE));
 }
 
 private List<HighScore> generateHighScoreList() {
   List<HighScore> highScores = new ArrayList();
-  print(highScoresMap);
+
   for (Integer score : highScoresMap.keySet()) {
     List<String> names = highScoresMap.get(score);
     for (int i=names.size() - 1; i >= 0; i--) {

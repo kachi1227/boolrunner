@@ -131,8 +131,6 @@ class BossBattleScreen extends BaseGameScreen {
       public boolean isProjectileWithinStrikingDistance(float distance) {
         boolean inDanger = false;
         for (BaseProjectile projectile : activePlayerProjectiles) {
-          //float test = dist(projectile.getRightSideX(), projectile.getTopSideY(), boss.getLeftX(), boss.getTopY());
-          //println(test);
           if (Math.abs(projectile.getRightSideX() - boss.getLeftX()) <= distance && 
             projectile.intersectsTwoPointsOnYAxis(boss.getTopY(), boss.getBottomY())) {
             inDanger = true;

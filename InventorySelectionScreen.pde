@@ -288,7 +288,7 @@ class InventorySelectionScreen extends BaseGameScreen {
   }
 
   boolean handleMouseClicked() {
-    boolean handled = super.handleKeyPressed();
+    boolean handled = super.handleMouseClicked();
     if (!handled) {
       if (mouseInsideHealth()) {
         if (attemptPurchase(HEALTH_COST, new InventoryItemOrder(new Health(0, 0, 0, 0), 1))) {

@@ -97,7 +97,7 @@ class StartGameScreen extends BaseGameScreen {
   }
 
   boolean handleMouseClicked() {
-    boolean handled = super.handleKeyPressed();
+    boolean handled = super.handleMouseClicked();
     if (!handled) {
       if (mouseInsideInstructions()) {
         delegate.performScreenChange(GameScreen.INSTRUCTIONS, new HashMap());

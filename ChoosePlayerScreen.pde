@@ -117,7 +117,7 @@ class ChoosePlayerScreen extends BaseGameScreen {
 
 
   boolean handleMouseClicked() {
-    boolean handled = super.handleKeyPressed();
+    boolean handled = super.handleMouseClicked();
     if (!handled) {
       if (mouseInsideJamaica()) {
         //pass jamaican value
