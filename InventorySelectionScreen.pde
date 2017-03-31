@@ -77,9 +77,9 @@ class InventorySelectionScreen extends BaseGameScreen {
   public void drawScreen() {
     drawBackground();
     drawSelectMoreHealthArea();
+    drawSelectShieldArea();
     drawSelectFlamethrowerArea();
     drawSelectIcicleThrowerArea();
-    drawSelectShieldArea();
     drawSelectBulletTime();
     drawInformationalItems();
   }
@@ -292,7 +292,7 @@ class InventorySelectionScreen extends BaseGameScreen {
     if (!handled) {
       if (mouseInsideHealth()) {
         if (attemptPurchase(HEALTH_COST, new InventoryItemOrder(new Health(0, 0, 0, 0), 1))) {
-         playerHealth += 15; 
+          playerHealth += 15;
         }
         return true;
       } else if (mouseInsideShield()) {

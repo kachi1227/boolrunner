@@ -123,7 +123,7 @@ class GameResultScreen extends BaseGameScreen {
   boolean handleKeyPressed() {
     if (allowHighScoreNameInput) {
       if (key != CODED) {
-        if ((key == RETURN || key == ENTER) && playerName.length() > 0) {
+        if ((key == RETURN || key == ENTER) && playerName.trim().length() > 0) {
           saveAndGoToHighScoreScreen();
         } else if (keyCode == BACKSPACE || keyCode == DELETE) {
           if (playerName.length() > 0) {

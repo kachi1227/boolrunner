@@ -8,10 +8,12 @@ class CreditsScreen extends BaseGameScreen {
   float alpha;
 
   String allCredits;
+  PImage kachImage;
 
   CreditsScreen(ScreenChangeDelegate delegate) {
     super(delegate);
     loadCredits();
+    loadCreditImage();
     loadMusicFiles();
   }
 
@@ -21,6 +23,10 @@ class CreditsScreen extends BaseGameScreen {
     for (String credit : creditLines) {
       allCredits += (credit + "\n");
     }
+  }
+  
+  private void loadCreditImage() {
+    kachImage = loadImage("young_tukach.png"); 
   }
 
   private void loadMusicFiles() {
@@ -53,11 +59,13 @@ class CreditsScreen extends BaseGameScreen {
 
     textSize(36);
     text("Kachi Nwaobasi", width/2, height + 20 - offset + 1830);
-    if (offset <= 2140) { //hard coded value..shouldn't be. Will hardcode for sake of time..
+    tint(255, alpha);
+    image(kachImage, width/2 - 150, height + 20 - offset + 1870, 300, 300);
+    if (offset <= 2240) { //hard coded value..shouldn't be. Will hardcode for sake of time..
       offset += 1;
       println(offset);
     } else {
-      alpha -= 0.75;
+      alpha -= 1.5;
       backgroundMusicPlayer.setGain(BASE_MUSIC_GAIN - (20 - (20 * (alpha/255))));
       if (alpha <= 0) {
         returnToStartScreen();

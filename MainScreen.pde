@@ -7,8 +7,6 @@ class MainScreen extends BaseGameScreen {
   float treeOneX;
   float treeTwoX;
 
-  int timeAllowed;
-  int startMillis;
   int coinsCollected;
 
   int runnerX;
@@ -149,9 +147,7 @@ class MainScreen extends BaseGameScreen {
     flameAmmoStartIndex = 0;
 
     obstaclesSeen = 0;
-    timeAllowed = 120;
-    startMillis = millis();
-
+    
     coinsCollected = 0;
     totalDistanceTravelled = 0;
     levelPassed = false;
@@ -355,8 +351,6 @@ class MainScreen extends BaseGameScreen {
   }
 
   private void drawHUD() {
-    int currentTime = timeAllowed - (int)((millis() - startMillis)/1000);
-    //println("Frame Counter: " + frameCounter + ". Frame Rate: " + frameRate + ". Counter/Rate: " + frameCounter/frameRate);
     textFont(getEightBitFont());
     fill(#778899);
     textSize(32);
@@ -370,12 +364,6 @@ class MainScreen extends BaseGameScreen {
     //health
     text(player.getHealth(), 45, 10);
     heartGenerator.drawImage(10, 13);
-    fill(#778899);
-    //time
-    int minutes = currentTime / 60;
-    int seconds = currentTime % 60;
-    text((Math.abs(minutes) < 10 ? ("0" + minutes) : minutes) + ":" + 
-      (Math.abs(seconds) < 10 ? ("0" + seconds) : seconds), 10, 13 + heartGenerator.getAdjustedImageHeight() + 8);
 
     textAlign(LEFT, TOP);
     fill(#778899);
@@ -430,7 +418,6 @@ class MainScreen extends BaseGameScreen {
     transitionDict.put(ScreenChangeDelegate.KEY_SELECTED, 
       player instanceof JamaicanBobSled ? PlayerType.JAMAICAN : PlayerType.AMERICAN);
     transitionDict.put(ScreenChangeDelegate.KEY_SCORE, player.getScore());
-    transitionDict.put(ScreenChangeDelegate.KEY_TIME_REMAINING, millis() - startMillis);
     transitionDict.put(ScreenChangeDelegate.KEY_HEALTH, player.getHealth());
     transitionDict.put(ScreenChangeDelegate.KEY_COINS, player.getCoinCount());
     delegate.performScreenChange(null, transitionDict);

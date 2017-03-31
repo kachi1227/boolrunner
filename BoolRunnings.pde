@@ -30,11 +30,11 @@ interface Moveable {
 interface ScreenChangeDelegate {
   String KEY_SELECTED = "selected_player";
   String KEY_SCORE = "score";
-  String KEY_TIME_REMAINING = "time_remaining";
   String KEY_HEALTH = "health";
   String KEY_COINS = "coins";
   String KEY_INVENTORY = "inventory";
   String KEY_GAME_RESULT = "game_result";
+  String KEY_PREVIOUS_SCREEN = "previous_screen";
   void performScreenChange(GameScreen toSuggestedScreen, Map<String, Object> transitionDict);
   void restart();
 }
@@ -44,6 +44,8 @@ interface HighScoreEvaluator {
   void saveScore(int score, String name);
   List<HighScore> getHighScoreList();
 }
+
+final static String HIGH_SCORE_DEST_FILE = "data/high_scores.json";
 
 GameScreen currentScreen = GameScreen.START;
 Map<GameScreen, BaseGameScreen> screenMap;
@@ -89,14 +91,22 @@ private void initGameScreens() {
   screenMap.put(GameScreen.GAME_RESULT, new GameResultScreen(screenDelegate, scoreEvaluator));
   screenMap.put(GameScreen.HIGH_SCORE, new HighScoreScreen(screenDelegate, scoreEvaluator));
   screenMap.put(GameScreen.CREDITS, new CreditsScreen(screenDelegate));
-  
+
   Map<String, Object> transitionMap = null;
   screenMap.get(currentScreen).reset(transitionMap);
 }
 
 private void loadHighScores() {
   highScoresMap = new TreeMap();
-  JSONArray highScoresJsonArray = loadJSONArray("high_scores.json");
+  JSONArray highScoresJsonArray;
+  File highScoreFile = new File(dataPath("high_scores.json"));
+  if (highScoreFile.exists()) {
+    println("high score file exists");
+    highScoresJsonArray = loadJSONArray("high_scores.json");
+  } else {
+    println("high score file doesnt exists");
+    highScoresJsonArray = createAndSaveNewHighScores();
+  }
   for (int i=0, size=highScoresJsonArray.size(); i < size; i++) {
     JSONObject highScoreJson = highScoresJsonArray.getJSONObject(i);
     int score = highScoreJson.getInt("score");
@@ -123,8 +133,9 @@ private void changeGameScreenFrom(GameScreen screen, GameScreen toSuggestedScree
     if (toSuggestedScreen == null) {
       currentScreen = GameScreen.CHOOSE_PLAYER;
       screenMap.get(currentScreen).reset(transitionMapping);
-    } else if (toSuggestedScreen ==  GameScreen.INVENTORY) {
-      currentScreen = GameScreen.INVENTORY;
+    } else if (toSuggestedScreen == GameScreen.INVENTORY || toSuggestedScreen == GameScreen.INSTRUCTIONS
+      || toSuggestedScreen == GameScreen.HIGH_SCORE || toSuggestedScreen == GameScreen.CREDITS) {
+      currentScreen = toSuggestedScreen;
       screenMap.get(currentScreen).reset(transitionMapping);
     }
     break;
@@ -160,6 +171,10 @@ private void changeGameScreenFrom(GameScreen screen, GameScreen toSuggestedScree
       screenMap.get(currentScreen).reset(transitionMapping);
     } else if (toSuggestedScreen == GameScreen.HIGH_SCORE) {
       currentScreen = GameScreen.HIGH_SCORE;
+      if (transitionMapping == null) {
+        transitionMapping = new HashMap(); 
+      }
+      transitionMapping.put(ScreenChangeDelegate.KEY_PREVIOUS_SCREEN, GameScreen.GAME_RESULT);
       screenMap.get(currentScreen).reset(transitionMapping);
     }
     break;
@@ -193,8 +208,21 @@ private void updateHighScoresMap(int score, String name) {
   if (lowScoreNames.isEmpty()) {
     highScoresMap.remove(lowestScore);
   }
-  
+
   writeHighScoresToFile();
+}
+
+private JSONArray createAndSaveNewHighScores() {
+  JSONArray emptyScoresJsonArray = new JSONArray();
+  for (int i=0; i < 10; i++) {
+    JSONObject highScoreJson = new JSONObject();
+    highScoreJson.put("score", 0);
+    highScoreJson.put("name", "Kachi");
+    emptyScoresJsonArray.append(highScoreJson);
+  }
+
+  saveJSONArray(emptyScoresJsonArray, HIGH_SCORE_DEST_FILE);
+  return emptyScoresJsonArray;
 }
 
 private void writeHighScoresToFile() {
@@ -208,7 +236,7 @@ private void writeHighScoresToFile() {
       highScoresJsonArray.append(highScoreJson);
     }
   }
-  saveJSONArray(highScoresJsonArray, "data/high_scores.json");
+  saveJSONArray(highScoresJsonArray, HIGH_SCORE_DEST_FILE);
 }
 
 private List<HighScore> generateHighScoreList() {

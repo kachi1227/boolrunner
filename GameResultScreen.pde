@@ -9,6 +9,8 @@ class HighScore {
 }
 class HighScoreScreen extends BaseGameScreen {
 
+  String spaceBarFunctionalityText;
+  
   HighScoreEvaluator highScoreEvaluator;
   List<HighScore> highScores;
 
@@ -20,6 +22,8 @@ class HighScoreScreen extends BaseGameScreen {
   void reset(Map<String, Object> gameStateValues) {
     super.reset(gameStateValues);
     highScores = highScoreEvaluator.getHighScoreList();
+    spaceBarFunctionalityText = gameStateValues == null || gameStateValues.get(ScreenChangeDelegate.KEY_PREVIOUS_SCREEN) != GameScreen.GAME_RESULT ?
+       "Press Space to Go Back" : "Press Space to Play Again";
     printArray(highScores);
   }
 
@@ -37,7 +41,7 @@ class HighScoreScreen extends BaseGameScreen {
     text("High Scores", width/2, 10);
     textFont(getMainFont());
     textSize(30);
-    text("Press Space to Play", width/2, groundLevel - 35);
+    text(spaceBarFunctionalityText, width/2, groundLevel - 35);
     textFont(getEightBitFont());
     fill(#778899);
     textSize(24);
