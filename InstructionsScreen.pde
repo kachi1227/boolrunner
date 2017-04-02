@@ -29,10 +29,13 @@ class InstructionsScreen extends BaseGameScreen {
 
     text("1 - Equip Snowball or Jump Boost\n\n3 - Equip Icicle Thrower\n\n5 - Equip Bullet Time", 
       70, 230, width/2 - 40, 300);
-      
-      
+
+
     text("2 - Equip Flamethrower\n\n4 - Equip Shield\n\nEnter - Use Equipped Item", 
       width/2 + 70, 230, width/2 - 40, 300);
+
+    textAlign(CENTER, TOP);
+    text("Space - Jump", width/2, 400);
   }
 
   boolean handleKeyPressed() {
